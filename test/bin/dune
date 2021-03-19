@@ -1,0 +1,2 @@
+(executables (names complete) (libraries core file_path prod_or_dev)
+ (preprocess (pps ppx_jane)))
