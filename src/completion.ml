@@ -8,14 +8,14 @@ open! Core_kernel
 include Completion_intf
 
 module Sys = struct
-  let getenv_opt = Sys.getenv_opt
+  let getenv = Sys.getenv
 
   open struct
     (* For testing, do all i/o relative to $ROOT_FOR_FILE_PATH_TESTING. *)
     let rooted path =
       if String.is_prefix path ~prefix:"/"
       then (
-        match getenv_opt "ROOT_FOR_FILE_PATH_TESTING" with
+        match getenv "ROOT_FOR_FILE_PATH_TESTING" with
         | Some root -> root ^ path
         | None -> path)
       else path
@@ -24,13 +24,13 @@ module Sys = struct
 
   let readdir path =
     let path = rooted path in
-    try Sys.readdir path with
+    try Caml.Sys.readdir path with
     | (_ : exn) -> [||]
   ;;
 
   let is_directory path =
     let path = rooted path in
-    try Sys.is_directory path with
+    try Caml.Sys.is_directory path with
     | (_ : exn) -> false
   ;;
 end
@@ -234,7 +234,7 @@ let complete_part_unescaped arg =
 (* strip escaping; strip and record use of [~] as [$HOME] *)
 let translate original =
   let unescaped = Escaping.unescape_permissive original in
-  match Sys.getenv_opt "HOME" with
+  match Sys.getenv "HOME" with
   | Some home
     (* only treat unescaped [~] as meaning [$HOME] *)
     when String.is_prefix original ~prefix:"~" ->

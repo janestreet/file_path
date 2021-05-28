@@ -1,4 +1,5 @@
 open! Core
+module Unix = Core_unix
 include File_path_unix_intf
 
 let executable_name = lazy (File_path.of_string Sys.executable_name)

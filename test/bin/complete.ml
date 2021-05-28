@@ -32,9 +32,15 @@ let () =
     ; subcommand "absolute" (module File_path.Absolute)
     ; subcommand "relative" (module File_path.Relative)
     ; subcommand "part" (module File_path.Part)
-    ; subcommand "filename" (module Filename)
+    ; subcommand
+        "filename"
+        (module struct
+          type t = Filename.t
+
+          let arg_type = Filename_unix.arg_type
+        end)
     ; subcommand "mode" (module Prod_or_dev)
     ; subcommand "quote" (module Quoted)
     ]
-  |> Command.run
+  |> Command_unix.run
 ;;

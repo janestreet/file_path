@@ -1,2 +1,3 @@
-(executables (names complete) (libraries core file_path prod_or_dev)
+(executables (names complete)
+ (libraries core.command_unix core file_path core.filename_unix prod_or_dev)
  (preprocess (pps ppx_jane)))

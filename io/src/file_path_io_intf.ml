@@ -30,7 +30,7 @@ module type S = sig
 
   (** {2 [Unix] Wrappers}
 
-      These functions abstract over either [Core.Unix] or [Async.Unix]. *)
+      These functions abstract over either [Core_unix] or [Async.Unix]. *)
 
   val rmdir : File_path.t -> unit io
   val chdir : File_path.t -> unit io
