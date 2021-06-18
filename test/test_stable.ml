@@ -1,8 +1,8 @@
-open! Core_kernel
+open! Core
 
 module Part = struct
   module V1 = struct
-    type t = File_path.Stable.Part.V1.t [@@deriving bin_io, compare, hash, sexp]
+    type t = File_path.Stable.Part.V1.t [@@deriving bin_io, compare, hash, sexp, equal]
     type comparator_witness = File_path.Stable.Part.V1.comparator_witness
 
     let comparator = File_path.Stable.Part.V1.comparator
@@ -81,7 +81,9 @@ end
 
 module Relative = struct
   module V1 = struct
-    type t = File_path.Stable.Relative.V1.t [@@deriving bin_io, compare, hash, sexp]
+    type t = File_path.Stable.Relative.V1.t
+    [@@deriving bin_io, compare, equal, hash, sexp]
+
     type comparator_witness = File_path.Stable.Relative.V1.comparator_witness
 
     let comparator = File_path.Stable.Relative.V1.comparator
@@ -185,7 +187,9 @@ end
 
 module Absolute = struct
   module V1 = struct
-    type t = File_path.Stable.Absolute.V1.t [@@deriving bin_io, compare, hash, sexp]
+    type t = File_path.Stable.Absolute.V1.t
+    [@@deriving bin_io, compare, equal, hash, sexp]
+
     type comparator_witness = File_path.Stable.Absolute.V1.comparator_witness
 
     let comparator = File_path.Stable.Absolute.V1.comparator
@@ -293,7 +297,7 @@ module Absolute = struct
 end
 
 module V1 = struct
-  type t = File_path.Stable.V1.t [@@deriving bin_io, compare, hash, sexp]
+  type t = File_path.Stable.V1.t [@@deriving bin_io, compare, equal, hash, sexp]
   type comparator_witness = File_path.Stable.V1.comparator_witness
 
   let comparator = File_path.Stable.V1.comparator

@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 include Part_intf
 
 let char_is_valid = function

@@ -1,6 +1,6 @@
 (* See comment in [bench_path.ml]. *)
 
-open! Core_kernel
+open! Core
 
 type t = File_path.Part.t [@@deriving quickcheck, sexp]
 

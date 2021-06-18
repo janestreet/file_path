@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 
 (** We do not need to test the [Types] module. *)
 module Types = File_path.Types

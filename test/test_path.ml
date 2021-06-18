@@ -11,7 +11,7 @@
    We provide [~message] or [~if_false_then_print_s] arguments to all [require*]
    functions, mostly to make the purpose of tests more readable for reviewers. *)
 
-open! Core_kernel
+open! Core
 open Expect_test_helpers_core
 
 type t = File_path.t [@@deriving quickcheck, sexp]

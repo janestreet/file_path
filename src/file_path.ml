@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 module Types = Types
 include Path
 module Absolute = Absolute

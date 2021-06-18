@@ -7,7 +7,7 @@
    giving some reasonable confidence that we have covered many important cases. If we
    discover more important cases in the future, we should add them here. *)
 
-open! Core_kernel
+open! Core
 include Examples_intf
 
 module With_prefix = struct

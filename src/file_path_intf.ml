@@ -1,6 +1,6 @@
 (** Implements typed file paths. See [../doc/index.mdx] for an introduction. *)
 
-open! Core_kernel
+open! Core
 
 module type Types = Types.S
 module type Part = Part.S

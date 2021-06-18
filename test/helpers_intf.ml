@@ -1,7 +1,7 @@
 (** We codify several testing patterns here to make [File_path] testing rigorous. Every
     expect test in this library should call one of these helpers. *)
 
-open! Core_kernel
+open! Core
 
 (** An arbitrary input type used by a test. *)
 module type Type = sig

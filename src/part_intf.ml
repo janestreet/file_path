@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 
 (** A part represents a single file or directory name within a path. For example, in
     "/usr/bin/ls", there are three parts: "usr", "bin", and "ls".

@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 
 (** A relative path represents one or more path parts relative to some unspecified
     "current" directory.

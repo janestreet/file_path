@@ -17,7 +17,7 @@
    A lot of this logic is finicky. We rely on comprehensive tests of [File_path] to ensure
    correctness of this module. *)
 
-open! Core_kernel
+open! Core
 
 let slash_char = '/'
 let slash_string = "/"

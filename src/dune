@@ -1,2 +1,2 @@
-(library (name file_path) (public_name file_path) (libraries core_kernel)
- (preprocess (pps ppx_jane)))
+(library (name file_path) (public_name file_path)
+ (libraries core_kernel.core) (preprocess (pps ppx_jane)))

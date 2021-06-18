@@ -3,7 +3,7 @@
     some idea of what cases we have covered, and gives us a deterministic set of inputs
     for which the expect tests can print outputs. *)
 
-open! Core_kernel
+open! Core
 
 (** Inputs to functions like [Path.is_prefix]. *)
 module With_prefix = struct

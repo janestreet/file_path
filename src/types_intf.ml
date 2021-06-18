@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 
 module type Type = sig
   (** Path types are represented as strings. *)

@@ -1,6 +1,6 @@
 (* See comment in [test_path.ml]. *)
 
-open! Core_kernel
+open! Core
 open Expect_test_helpers_core
 
 type t = File_path.Relative.t [@@deriving quickcheck, sexp]

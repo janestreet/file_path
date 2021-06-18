@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 
 (** An absolute path represents one or more path parts relative to the root directory.
 

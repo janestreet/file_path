@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 include Relative_intf
 
 include

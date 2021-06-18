@@ -2,7 +2,7 @@ open! Core
 module Unix = Core_unix
 include File_path_unix_intf
 
-let executable_name = lazy (File_path.of_string Sys.executable_name)
+let executable_name = lazy (File_path.of_string Sys_unix.executable_name)
 
 include struct
   (* file i/o *)
@@ -17,15 +17,15 @@ end
 include struct
   (* [Sys] wrappers *)
 
-  let exists_exn path = Sys.file_exists_exn (File_path.to_string path)
-  let is_directory_exn path = Sys.is_directory_exn (File_path.to_string path)
-  let is_file_exn path = Sys.is_file_exn (File_path.to_string path)
-  let exists path = Sys.file_exists (File_path.to_string path)
-  let is_directory path = Sys.is_directory (File_path.to_string path)
-  let is_file path = Sys.is_file (File_path.to_string path)
+  let exists_exn path = Sys_unix.file_exists_exn (File_path.to_string path)
+  let is_directory_exn path = Sys_unix.is_directory_exn (File_path.to_string path)
+  let is_file_exn path = Sys_unix.is_file_exn (File_path.to_string path)
+  let exists path = Sys_unix.file_exists (File_path.to_string path)
+  let is_directory path = Sys_unix.is_directory (File_path.to_string path)
+  let is_file path = Sys_unix.is_file (File_path.to_string path)
 
   let ls_dir path =
-    Sys.ls_dir (File_path.to_string path)
+    Sys_unix.ls_dir (File_path.to_string path)
     |> List.map ~f:File_path.Part.of_string
     |> List.sort ~compare:File_path.Part.compare
   ;;

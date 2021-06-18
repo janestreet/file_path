@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 
 (** A path represents one or more path parts relative to either the root directory or an
     unspecified "current" directory.

@@ -1,4 +1,5 @@
 (library (name file_path_io_test) (public_name file_path.file_path_io_test)
- (libraries async core expect_test_helpers_async expect_test_helpers_core
-  file_path file_path_io file_path_unix file_path_unix_async)
+ (libraries async core_kernel.core expect_test_helpers_async
+  expect_test_helpers_core file_path file_path_io file_path_unix
+  file_path_unix_async)
  (preprocess (pps ppx_jane)))

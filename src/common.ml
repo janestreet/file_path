@@ -1,12 +1,11 @@
-open! Core_kernel
+open! Core
 include Common_intf
 
 module Make (T : Types.Type) (Basis : Basis) = struct
   module Stable = struct
     (* Our stable serializations are not straightforward, as they parse and canonicalize
-       strings. Rather than opening only [Core_kernel.Core_kernel_stable], we use as much
-       of [Core_kernel] as we need, and make sure to write thorough tests for the stable
-       serializations. *)
+       strings. Rather than opening only [Core.Core_stable], we use as much of [Core] as
+       we need, and make sure to write thorough tests for the stable serializations. *)
 
     module V1 = struct
       include T

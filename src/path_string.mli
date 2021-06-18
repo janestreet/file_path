@@ -4,7 +4,7 @@
     [Relative], and [Absolute]. The string operations are defined generically for both
     relative and absolute paths where appropriate, so all three modules can call them. *)
 
-open! Core_kernel
+open! Core
 
 (** The root directory. *)
 val root : string

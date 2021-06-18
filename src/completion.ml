@@ -4,7 +4,7 @@
    We are not as concerned with low-level performance in this module as in [Path_string],
    since the cost of fork/exec and i/o likely dominates the cost of auto-completion. *)
 
-open! Core_kernel
+open! Core
 include Completion_intf
 
 module Sys = struct

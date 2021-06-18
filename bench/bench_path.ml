@@ -16,7 +16,7 @@
    argument is not part of what we time, and that the closure cannot be specialized to the
    argument value. *)
 
-open! Core_kernel
+open! Core
 
 type t = File_path.t [@@deriving quickcheck, sexp]
 
