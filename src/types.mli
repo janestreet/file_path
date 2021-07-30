@@ -1,1 +1,1 @@
-include Types_intf.Types
+include Types_intf.Types (** @inline *)

@@ -1,1 +1,1 @@
-include Path_intf.Path
+include Path_intf.Path (** @inline *)

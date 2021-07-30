@@ -1,1 +1,1 @@
-include Helpers_intf.Helpers
+include Helpers_intf.Helpers (** @inline *)

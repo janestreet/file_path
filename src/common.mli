@@ -1,1 +1,1 @@
-include Common_intf.Common
+include Common_intf.Common (** @inline *)

@@ -1,1 +1,1 @@
-include Completion_intf.Completion
+include Completion_intf.Completion (** @inline *)

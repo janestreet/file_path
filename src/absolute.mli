@@ -1,1 +1,1 @@
-include Absolute_intf.Absolute
+include Absolute_intf.Absolute (** @inline *)

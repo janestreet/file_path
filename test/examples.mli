@@ -1,1 +1,1 @@
-include Examples_intf.Examples
+include Examples_intf.Examples (** @inline *)

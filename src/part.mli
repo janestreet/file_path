@@ -1,1 +1,1 @@
-include Part_intf.Part
+include Part_intf.Part (** @inline *)

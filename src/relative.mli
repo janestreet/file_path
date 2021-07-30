@@ -1,1 +1,1 @@
-include Relative_intf.Relative
+include Relative_intf.Relative (** @inline *)
