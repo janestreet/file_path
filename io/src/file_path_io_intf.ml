@@ -16,6 +16,18 @@ module type S = sig
   val read_file : File_path.t -> string io
   val write_file : File_path.t -> contents:string -> unit io
 
+  (** {2 [Filename] Wrappers}
+
+      These functions abstract over [Filename_unix]. *)
+
+  val realpath
+    :  File_path.t
+    -> relative_to:File_path.Absolute.t
+    -> File_path.Absolute.t io
+
+  val realpath_absolute : File_path.Absolute.t -> File_path.Absolute.t io
+  val realpath_relative_to_cwd : File_path.t -> File_path.Absolute.t io
+
   (** {2 [Sys] Wrappers}
 
       These functions abstract over either [Core.Sys] or [Async.Sys]. *)

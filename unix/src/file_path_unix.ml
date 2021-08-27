@@ -15,6 +15,20 @@ include struct
 end
 
 include struct
+  (* [Filename] wrappers *)
+
+  let realpath_relative_to_cwd path =
+    File_path.Absolute.of_string (Filename_unix.realpath (File_path.to_string path))
+  ;;
+
+  let realpath_absolute path = realpath_relative_to_cwd (File_path.of_absolute path)
+
+  let realpath path ~relative_to =
+    realpath_absolute (File_path.make_absolute path ~under:relative_to)
+  ;;
+end
+
+include struct
   (* [Sys] wrappers *)
 
   let exists_exn path = Sys_unix.file_exists_exn (File_path.to_string path)

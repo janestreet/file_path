@@ -286,6 +286,106 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
       [%expect {| a/relative/path |}];
       return ())
   ;;
+
+  let realpath = IO.realpath
+  let realpath_absolute = IO.realpath_absolute
+  let realpath_relative_to_cwd = IO.realpath_relative_to_cwd
+
+  let%expect_test "[realpath_relative_to_cwd]" =
+    with_temp_dir (fun tmp ->
+      (* helpers *)
+      let in_dir dir f =
+        let%bind cwd = Sys.getcwd () in
+        Monitor.protect
+          (fun () ->
+             let%bind () = Unix.chdir dir in
+             f ())
+          ~finally:(fun () -> Unix.chdir cwd)
+      in
+      let abspath string = File_path.Absolute.of_string (tmp ^/ string) in
+      let relpath string = File_path.Relative.of_string string in
+      let irrelevant_dir = Filename.temp_dir_name in
+      let fns =
+        (* all the [realpath*] functions, called with both abspaths and relpaths *)
+        let realpath_absolute_of_abspath string =
+          realpath_absolute (abspath string) |> IO.async
+        in
+        let realpath_of_abspath string =
+          realpath
+            (abspath string :> File_path.t)
+            ~relative_to:(File_path.Absolute.of_string irrelevant_dir)
+          |> IO.async
+        in
+        let realpath_of_relpath string =
+          realpath
+            (relpath string :> File_path.t)
+            ~relative_to:(File_path.Absolute.of_string tmp)
+          |> IO.async
+        in
+        let realpath_relative_to_cwd_of_abspath string =
+          in_dir irrelevant_dir (fun () ->
+            realpath_relative_to_cwd (abspath string :> File_path.t) |> IO.async)
+        in
+        let realpath_relative_to_cwd_of_relpath string =
+          in_dir tmp (fun () ->
+            realpath_relative_to_cwd (relpath string :> File_path.t) |> IO.async)
+        in
+        [ realpath_absolute_of_abspath
+        ; realpath_of_abspath
+        ; realpath_of_relpath
+        ; realpath_relative_to_cwd_of_abspath
+        ; realpath_relative_to_cwd_of_relpath
+        ]
+      in
+      let test string =
+        let%bind results =
+          Deferred.List.map fns ~f:(fun fn ->
+            Deferred.Or_error.try_with ~extract_exn:true (fun () -> fn string))
+        in
+        match
+          List.all_equal
+            results
+            ~equal:[%equal: (File_path.Absolute.t, (Error.t[@equal.ignore])) Result.t]
+        with
+        | Some result ->
+          [%sexp (result : File_path.Absolute.t Or_error.t)]
+          |> replace_s ~pattern:tmp ~with_:"$TMP"
+          |> print_s;
+          return ()
+        | None ->
+          print_cr
+            [%here]
+            [%message
+              "realpath results differ" (results : File_path.Absolute.t Or_error.t list)];
+          return ()
+      in
+      (* test tmp directory itself *)
+      let%bind () = test "." in
+      [%expect {| (Ok $TMP) |}];
+      (* test a nonexistent path *)
+      let%bind () = test "nonexistent" in
+      [%expect
+        {| (Error (Unix.Unix_error "No such file or directory" realpath $TMP/nonexistent)) |}];
+      (* test a normal file *)
+      let%bind () = run "touch" [ tmp ^/ "real-file" ] in
+      let%bind () = test "real-file" in
+      [%expect {| (Ok $TMP/real-file) |}];
+      (* test a symlink to a normal file *)
+      let%bind () = Unix.symlink ~link_name:(tmp ^/ "link-file") ~target:"real-file" in
+      let%bind () = test "link-file" in
+      [%expect {| (Ok $TMP/real-file) |}];
+      (* test a normal directory *)
+      let%bind () = Unix.mkdir (tmp ^/ "a") in
+      let%bind () = Unix.mkdir (tmp ^/ "a/b") in
+      let%bind () = test "a/b" in
+      [%expect {| (Ok $TMP/a/b) |}];
+      (* test a symlink to a directory *)
+      let%bind () = Unix.mkdir (tmp ^/ "c") in
+      let%bind () = Unix.symlink ~link_name:(tmp ^/ "c/d") ~target:"../a" in
+      let%bind () = test "c/d" in
+      [%expect {| (Ok $TMP/a) |}];
+      return ())
+  ;;
 end
 
 module Test_file_path_core = Test_file_path_io (struct

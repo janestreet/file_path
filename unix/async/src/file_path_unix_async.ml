@@ -12,6 +12,22 @@ include struct
 end
 
 include struct
+  (* [Filename] wrappers. *)
+
+  let realpath_relative_to_cwd path =
+    In_thread.run (fun () -> File_path_unix.realpath_relative_to_cwd path)
+  ;;
+
+  let realpath_absolute path =
+    In_thread.run (fun () -> File_path_unix.realpath_absolute path)
+  ;;
+
+  let realpath path ~relative_to =
+    In_thread.run (fun () -> File_path_unix.realpath path ~relative_to)
+  ;;
+end
+
+include struct
   (* [Sys] wrappers *)
 
   let exists_exn path = Sys.file_exists_exn (File_path.to_string path)

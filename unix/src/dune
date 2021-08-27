@@ -1,4 +1,4 @@
 (library (name file_path_unix) (public_name file_path.file_path_unix)
- (libraries core_kernel.core core.core_unix file_path file_path_io
-  core.sys_unix)
+ (libraries core_kernel.core core.core_unix core.filename_unix file_path
+  file_path_io core.sys_unix)
  (preprocess (pps ppx_jane)))
