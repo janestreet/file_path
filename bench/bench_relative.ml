@@ -337,6 +337,18 @@ let%bench_fun "to_parts, compound" =
   fun () -> to_parts t
 ;;
 
+let to_parts_nonempty = File_path.Relative.to_parts_nonempty
+
+let%bench_fun "to_parts_nonempty, dot" =
+  let t = Sys.opaque_identity dot in
+  fun () -> to_parts_nonempty t
+;;
+
+let%bench_fun "to_parts_nonempty, compound" =
+  let t = Sys.opaque_identity (of_string "foo/bar/baz") in
+  fun () -> to_parts_nonempty t
+;;
+
 let of_parts = File_path.Relative.of_parts
 
 let%bench_fun "of_parts, empty" =
@@ -384,6 +396,20 @@ let%bench_fun "of_parts_defaulting_to_dot, non-empty" =
       ]
   in
   fun () -> of_parts_defaulting_to_dot parts
+;;
+
+let of_parts_nonempty = File_path.Relative.of_parts_nonempty
+
+let%bench_fun "of_parts_nonempty" =
+  let parts =
+    Sys.opaque_identity
+      ([ File_path.Part.of_string "foo"
+       ; File_path.Part.of_string "bar"
+       ; File_path.Part.of_string "baz"
+       ]
+       : _ Nonempty_list.t)
+  in
+  fun () -> of_parts_nonempty parts
 ;;
 
 let simplify_dot = File_path.Relative.simplify_dot

@@ -123,6 +123,9 @@ module type S = sig
       list of parts is empty. *)
   val of_parts_relative_defaulting_to_dot : Part.t list -> t
 
+  (** Returns a relative path consisting of the given one or more parts. *)
+  val of_parts_relative_nonempty : Part.t Nonempty_list.t -> t
+
   (** Equivalent to [List.length (to_parts t)], without allocating. *)
   val number_of_parts : t -> int
 

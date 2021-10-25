@@ -202,6 +202,8 @@ let to_parts t =
     ~part_of_string:Part.Expert.unchecked_of_canonical_string
 ;;
 
+let to_parts_nonempty t = Nonempty_list.of_list_exn (to_parts t)
+
 let of_parts parts =
   Path_string.of_parts_relative
     (parts : Part.t list :> string list)
@@ -223,6 +225,7 @@ let of_parts_defaulting_to_dot parts =
     ~if_none:(fun () -> dot)
 ;;
 
+let of_parts_nonempty parts = of_parts_exn (Nonempty_list.to_list parts)
 let number_of_parts t = Path_string.number_of_parts (to_string t)
 
 include

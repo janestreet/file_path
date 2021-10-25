@@ -125,6 +125,9 @@ module type S = sig
   (** Produces the parts of the path. *)
   val to_parts : t -> Part.t list
 
+  (** Produces the parts of the path. *)
+  val to_parts_nonempty : t -> Part.t Nonempty_list.t
+
   (** Returns a relative path consisting of the given one or more parts, or [None] if the
       list of parts is empty. *)
   val of_parts : Part.t list -> t option
@@ -136,6 +139,9 @@ module type S = sig
   (** Returns a relative path consisting of the given one or more parts, or [dot] if the
       list of parts is empty. *)
   val of_parts_defaulting_to_dot : Part.t list -> t
+
+  (** Returns a relative path consisting of the given one or more parts. *)
+  val of_parts_nonempty : Part.t Nonempty_list.t -> t
 
   (** Equivalent to [List.length (to_parts t)], without allocating. *)
   val number_of_parts : t -> int

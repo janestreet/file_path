@@ -214,6 +214,7 @@ let of_parts_relative_defaulting_to_dot parts =
     ~if_none:(fun () -> dot)
 ;;
 
+let of_parts_relative_nonempty parts = of_parts_relative_exn (Nonempty_list.to_list parts)
 let number_of_parts t = Path_string.number_of_parts (to_string t)
 
 let make_absolute t ~under =

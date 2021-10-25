@@ -598,6 +598,20 @@ let%bench_fun "of_parts_relative_defaulting_to_dot, non-empty" =
   fun () -> of_parts_relative_defaulting_to_dot parts
 ;;
 
+let of_parts_relative_nonempty = File_path.of_parts_relative_nonempty
+
+let%bench_fun "of_parts_relative_nonempty" =
+  let parts =
+    Sys.opaque_identity
+      ([ File_path.Part.of_string "foo"
+       ; File_path.Part.of_string "bar"
+       ; File_path.Part.of_string "baz"
+       ]
+       : _ Nonempty_list.t)
+  in
+  fun () -> of_parts_relative_nonempty parts
+;;
+
 let make_absolute = File_path.make_absolute
 
 let%bench_fun "make_absolute, absolute" =

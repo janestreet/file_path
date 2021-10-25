@@ -1000,6 +1000,39 @@ let%expect_test _ =
     (bin/exe/file -> (bin exe file)) |}]
 ;;
 
+let to_parts_nonempty = File_path.Relative.to_parts_nonempty
+
+let%expect_test _ =
+  Helpers.test
+    to_parts_nonempty
+    ~input:(module File_path.Relative)
+    ~output:(module Helpers.Nonempty_list (File_path.Part))
+    ~examples:Examples.Relative.for_conversion
+    ~correctness:(fun relative to_parts_nonempty ->
+      require_equal
+        [%here]
+        (module Helpers.List (File_path.Part))
+        (Nonempty_list.to_list to_parts_nonempty)
+        (to_parts relative)
+        ~message:"[to_parts_nonempty] and [to_parts] are inconsistent");
+  [%expect
+    {|
+    (. -> (.))
+    (.. -> (..))
+    (filename.txt -> (filename.txt))
+    (bin -> (bin))
+    (.hidden -> (.hidden))
+    ("This is a sentence; it has punctuation, capitalization, and spaces!"
+     ->
+     ("This is a sentence; it has punctuation, capitalization, and spaces!"))
+    ("\001\255" -> ("\001\255"))
+    (./. -> (. .))
+    (../.. -> (.. ..))
+    (././. -> (. . .))
+    (bin/exe -> (bin exe))
+    (bin/exe/file -> (bin exe file)) |}]
+;;
+
 let of_parts = File_path.Relative.of_parts
 
 let%expect_test _ =
@@ -1116,6 +1149,55 @@ let%expect_test _ =
   [%expect
     {|
     (() -> .)
+    ((.) -> .)
+    ((..) -> ..)
+    ((filename.txt) -> filename.txt)
+    ((bin) -> bin)
+    ((.hidden) -> .hidden)
+    (("This is a sentence; it has punctuation, capitalization, and spaces!")
+     ->
+     "This is a sentence; it has punctuation, capitalization, and spaces!")
+    (("\001\255") -> "\001\255")
+    ((. .) -> ./.)
+    ((.. .) -> ../.)
+    ((.. .) -> ../.)
+    ((.. ..) -> ../..)
+    ((filename.txt .) -> filename.txt/.)
+    ((.. filename.txt) -> ../filename.txt)
+    ((bin .) -> bin/.)
+    ((.. bin) -> ../bin)
+    ((.hidden .) -> .hidden/.)
+    ((.. .hidden) -> ../.hidden)
+    (("This is a sentence; it has punctuation, capitalization, and spaces!" .)
+     ->
+     "This is a sentence; it has punctuation, capitalization, and spaces!/.")
+    ((.. "This is a sentence; it has punctuation, capitalization, and spaces!")
+     ->
+     "../This is a sentence; it has punctuation, capitalization, and spaces!")
+    (("\001\255" .) -> "\001\255/.")
+    ((.. "\001\255") -> "../\001\255")
+    ((.hidden bin.exe) -> .hidden/bin.exe)
+    ((.hidden bin exe.file) -> .hidden/bin/exe.file) |}]
+;;
+
+let of_parts_nonempty = File_path.Relative.of_parts_nonempty
+
+let%expect_test _ =
+  Helpers.test
+    of_parts_nonempty
+    ~input:(module Helpers.Nonempty_list (File_path.Part))
+    ~output:(module File_path.Relative)
+    ~examples:
+      (List.filter_map Examples.Part.lists_for_conversion ~f:Nonempty_list.of_list)
+    ~correctness:(fun parts of_parts_nonempty ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path.Relative))
+        (of_parts (Nonempty_list.to_list parts))
+        (Some of_parts_nonempty)
+        ~message:"[of_parts_nonempty] and [of_parts] are inconsistent");
+  [%expect
+    {|
     ((.) -> .)
     ((..) -> ..)
     ((filename.txt) -> filename.txt)

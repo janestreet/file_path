@@ -264,6 +264,12 @@ module List (Type : Type) = struct
   let invariant = List.invariant Type.invariant
 end
 
+module Nonempty_list (Type : Type) = struct
+  type t = Type.t Nonempty_list.t [@@deriving compare, equal, quickcheck, sexp_of]
+
+  let invariant = Nonempty_list.invariant Type.invariant
+end
+
 module With_prefix (Type : Type) = struct
   type t = Type.t Examples.With_prefix.t [@@deriving compare, equal, quickcheck, sexp_of]
 

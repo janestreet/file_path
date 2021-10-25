@@ -116,6 +116,7 @@ module type Helpers = sig
 
   module Option (Type : Type) : Type with type t = Type.t option
   module List (Type : Type) : Type with type t = Type.t list
+  module Nonempty_list (Type : Type) : Type with type t = Type.t Nonempty_list.t
   module Or_error (Type : Type) : Type with type t = Type.t Or_error.t
   module Tuple2 (A : Type) (B : Type) : Type with type t = A.t * B.t
   module With_prefix (Type : Type) : Type with type t = Type.t Examples.With_prefix.t
