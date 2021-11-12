@@ -2,7 +2,7 @@
 
 open! Core
 
-type t = File_path.Relative.t [@@deriving quickcheck, sexp]
+type t = File_path.Relative.t [@@deriving quickcheck, sexp, sexp_grammar]
 
 let arg_type = File_path.Relative.arg_type
 let dot = File_path.Relative.dot

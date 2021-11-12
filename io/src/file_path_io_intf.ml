@@ -15,6 +15,14 @@ module type S = sig
 
   val read_file : File_path.t -> string io
   val write_file : File_path.t -> contents:string -> unit io
+  val load_sexp : File_path.t -> Sexp.t io
+  val load_sexps : File_path.t -> Sexp.t list io
+  val load_as_sexp : File_path.t -> of_sexp:(Sexp.t -> 'a) -> 'a io
+  val load_as_sexps : File_path.t -> of_sexp:(Sexp.t -> 'a) -> 'a list io
+  val save_sexp : File_path.t -> Sexp.t -> unit io
+  val save_sexps : File_path.t -> Sexp.t list -> unit io
+  val save_as_sexp : File_path.t -> 'a -> sexp_of:('a -> Sexp.t) -> unit io
+  val save_as_sexps : File_path.t -> 'a list -> sexp_of:('a -> Sexp.t) -> unit io
 
   (** {2 [Filename] Wrappers}
 

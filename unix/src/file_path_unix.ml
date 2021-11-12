@@ -12,6 +12,35 @@ include struct
   let write_file path ~contents =
     Out_channel.write_all (File_path.to_string path) ~data:contents
   ;;
+
+
+  let load_as_sexp path ~of_sexp =
+    Parsexp.Conv_single.parse_string_exn (read_file path) of_sexp
+  ;;
+
+  let load_as_sexps path ~of_sexp =
+    Parsexp.Conv_many.parse_string_exn (read_file path) of_sexp
+  ;;
+
+  let load_sexp path = load_as_sexp path ~of_sexp:Fn.id
+  let load_sexps path = load_as_sexps path ~of_sexp:Fn.id
+
+  let write_with_buffer path ~f =
+    let buf = Buffer.create 16 in
+    f buf;
+    write_file path ~contents:(Buffer.contents buf)
+  ;;
+
+  let save_as_sexps path xs ~sexp_of =
+    write_with_buffer path ~f:(fun buf ->
+      List.iter xs ~f:(fun x ->
+        Sexp.to_buffer_hum (sexp_of x) ~buf;
+        Buffer.add_char buf '\n'))
+  ;;
+
+  let save_as_sexp path x ~sexp_of = save_as_sexps path [ x ] ~sexp_of
+  let save_sexp path sexp = save_as_sexp path sexp ~sexp_of:Fn.id
+  let save_sexps path sexps = save_as_sexps path sexps ~sexp_of:Fn.id
 end
 
 include struct

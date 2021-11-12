@@ -2,7 +2,7 @@
 
 open! Core
 
-type t = File_path.Absolute.t [@@deriving quickcheck, sexp]
+type t = File_path.Absolute.t [@@deriving quickcheck, sexp, sexp_grammar]
 
 let arg_type = File_path.Absolute.arg_type
 let root = File_path.Absolute.root

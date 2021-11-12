@@ -27,7 +27,7 @@ end
 (** Stable path type serialization includes bin-io and sexp serialization, along with
     stable set, map, hash table, and hash set serializations. *)
 module type Version = sig
-  type t [@@deriving equal, hash]
+  type t [@@deriving equal, hash, sexp_grammar]
 
   include Stable_comparable.V1 with type t := t
   include Hashable.Stable.V1.S with type key := t

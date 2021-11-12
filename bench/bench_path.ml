@@ -18,7 +18,7 @@
 
 open! Core
 
-type t = File_path.t [@@deriving quickcheck, sexp]
+type t = File_path.t [@@deriving quickcheck, sexp, sexp_grammar]
 
 let arg_type = File_path.arg_type
 let root = File_path.root

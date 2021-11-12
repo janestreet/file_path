@@ -3,7 +3,7 @@
 open! Core
 open Expect_test_helpers_core
 
-type t = File_path.Relative.t [@@deriving quickcheck, sexp]
+type t = File_path.Relative.t [@@deriving quickcheck, sexp, sexp_grammar]
 
 let dot = File_path.Relative.dot
 let dot_dot = File_path.Relative.dot_dot

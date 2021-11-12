@@ -37,6 +37,133 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
       return ())
   ;;
 
+  open struct
+    (* Helpers for load/save tests. *)
+
+    let test_load_save m original ~load ~save =
+      within_temp_dir (fun () ->
+        let path = File_path.of_string "data.sexp" in
+        let%bind () = save path original |> IO.async in
+        let%bind contents = read_file path |> IO.async in
+        print_string contents;
+        let%bind round_trip = load path |> IO.async in
+        require_equal [%here] m original round_trip;
+        return ())
+    ;;
+  end
+
+  let load_sexp = IO.load_sexp
+  let save_sexp = IO.save_sexp
+
+  let%expect_test "[load_sexp] and [save_sexp]" =
+    let test string =
+      test_load_save (module Sexp) ~load:load_sexp ~save:save_sexp (Sexp.of_string string)
+    in
+    let%bind () = test "()" in
+    [%expect {| () |}];
+    let%bind () =
+      test
+        "((key value) (other-key other-value) (another-key another-value) \
+         (yet-another-key yet-another-value))"
+    in
+    [%expect
+      {|
+      ((key value) (other-key other-value) (another-key another-value)
+       (yet-another-key yet-another-value)) |}];
+    return ()
+  ;;
+
+  let load_sexps = IO.load_sexps
+  let save_sexps = IO.save_sexps
+
+  let%expect_test "[load_sexps] and [save_sexps]" =
+    let test string =
+      test_load_save
+        (module struct
+          type t = Sexp.t list [@@deriving equal, sexp_of]
+        end)
+        ~load:load_sexps
+        ~save:save_sexps
+        (Sexp.of_string_many string)
+    in
+    let%bind () = test "" in
+    [%expect {| |}];
+    let%bind () =
+      test
+        "(key value) (other-key other-value) (another-key another-value) \
+         (yet-another-key yet-another-value)"
+    in
+    [%expect
+      {|
+      (key value)
+      (other-key other-value)
+      (another-key another-value)
+      (yet-another-key yet-another-value) |}];
+    return ()
+  ;;
+
+  let load_as_sexp = IO.load_as_sexp
+  let save_as_sexp = IO.save_as_sexp
+
+  let%expect_test "[load_as_sexp] and [save_as_sexp]" =
+    let module M = struct
+      type t = string Int.Map.t [@@deriving equal, sexp]
+    end
+    in
+    let test alist =
+      test_load_save
+        (module M)
+        ~load:(load_as_sexp ~of_sexp:M.t_of_sexp)
+        ~save:(save_as_sexp ~sexp_of:M.sexp_of_t)
+        (Int.Map.of_alist_exn alist)
+    in
+    let%bind () = test [] in
+    [%expect {| () |}];
+    let%bind () =
+      test
+        [ 1, "a unit"; 2, "a prime number"; 3, "a prime number"; 4, "a composite number" ]
+    in
+    [%expect
+      {|
+      ((1 "a unit") (2 "a prime number") (3 "a prime number")
+       (4 "a composite number")) |}];
+    return ()
+  ;;
+
+  let load_as_sexps = IO.load_as_sexps
+  let save_as_sexps = IO.save_as_sexps
+
+  let%expect_test "[load_as_sexps] and [save_as_sexps]" =
+    let module M = struct
+      type t = string * string list [@@deriving equal, sexp]
+    end
+    in
+    let test list =
+      test_load_save
+        (module struct
+          type t = M.t list [@@deriving equal, sexp_of]
+        end)
+        ~load:(load_as_sexps ~of_sexp:M.t_of_sexp)
+        ~save:(save_as_sexps ~sexp_of:M.sexp_of_t)
+        list
+    in
+    let%bind () = test [] in
+    [%expect {| |}];
+    let%bind () =
+      test
+        [ "do", [ "a deer"; "a female deer" ]
+        ; "re", [ "a drop of golden sun" ]
+        ; "mi", [ "a name"; "I call myself" ]
+        ]
+    in
+    [%expect
+      {|
+      (do ("a deer" "a female deer"))
+      (re ("a drop of golden sun"))
+      (mi ("a name" "I call myself")) |}];
+    return ()
+  ;;
+
   let exists = IO.exists
   let exists_exn = IO.exists_exn
   let is_directory = IO.is_directory

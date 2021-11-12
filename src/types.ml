@@ -2,7 +2,7 @@ open! Core
 include Types_intf
 
 module T = struct
-  type t = string [@@deriving equal, hash, sexp_of]
+  type t = string [@@deriving equal, hash, sexp_of, sexp_grammar]
 
   let to_string = Fn.id
   let compare = Path_string.compare

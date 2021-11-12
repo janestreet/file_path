@@ -2,7 +2,7 @@
 
 open! Core
 
-type t = File_path.Part.t [@@deriving quickcheck, sexp]
+type t = File_path.Part.t [@@deriving quickcheck, sexp, sexp_grammar]
 
 let arg_type = File_path.Part.arg_type
 let dot = File_path.Part.dot

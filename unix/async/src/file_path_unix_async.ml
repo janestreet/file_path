@@ -9,6 +9,22 @@ include struct
 
   let read_file path = Reader.file_contents (File_path.to_string path)
   let write_file path ~contents = Writer.save (File_path.to_string path) ~contents
+  let load_as_sexp path ~of_sexp = Reader.load_sexp_exn (File_path.to_string path) of_sexp
+
+  let load_as_sexps path ~of_sexp =
+    Reader.load_sexps_exn (File_path.to_string path) of_sexp
+  ;;
+
+  let load_sexp path = load_as_sexp path ~of_sexp:Fn.id
+  let load_sexps path = load_as_sexps path ~of_sexp:Fn.id
+
+  let save_as_sexps path xs ~sexp_of =
+    Writer.save_sexps_conv (File_path.to_string path) xs sexp_of
+  ;;
+
+  let save_as_sexp path x ~sexp_of = save_as_sexps path [ x ] ~sexp_of
+  let save_sexp path sexp = save_as_sexp path sexp ~sexp_of:Fn.id
+  let save_sexps path sexps = save_as_sexps path sexps ~sexp_of:Fn.id
 end
 
 include struct

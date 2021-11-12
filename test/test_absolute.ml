@@ -3,7 +3,7 @@
 open! Core
 open Expect_test_helpers_core
 
-type t = File_path.Absolute.t [@@deriving quickcheck, sexp]
+type t = File_path.Absolute.t [@@deriving quickcheck, sexp, sexp_grammar]
 
 let root = File_path.Absolute.root
 
