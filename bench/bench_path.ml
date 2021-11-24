@@ -147,6 +147,20 @@ let%bench_fun "to_relative_exn" =
   fun () -> to_relative_exn t
 ;;
 
+let to_absolute_or_error = File_path.to_absolute_or_error
+
+let%bench_fun "to_absolute_or_error" =
+  let t = Sys.opaque_identity (of_string "/foo/bar/baz") in
+  fun () -> to_absolute_or_error t
+;;
+
+let to_relative_or_error = File_path.to_relative_or_error
+
+let%bench_fun "to_relative_or_error" =
+  let t = Sys.opaque_identity (of_string "foo/bar/baz") in
+  fun () -> to_relative_or_error t
+;;
+
 let of_absolute = File_path.of_absolute
 
 let%bench_fun "of_absolute" =
@@ -195,6 +209,18 @@ let%bench_fun "basename_exn, absolute" =
 let%bench_fun "basename_exn, relative" =
   let t = Sys.opaque_identity (of_string "foo/bar/baz") in
   fun () -> basename_exn t
+;;
+
+let basename_or_error = File_path.basename_or_error
+
+let%bench_fun "basename_or_error, absolute" =
+  let t = Sys.opaque_identity (of_string "/foo/bar/baz") in
+  fun () -> basename_or_error t
+;;
+
+let%bench_fun "basename_or_error, relative" =
+  let t = Sys.opaque_identity (of_string "foo/bar/baz") in
+  fun () -> basename_or_error t
 ;;
 
 let basename_defaulting_to_dot = File_path.basename_defaulting_to_dot
@@ -246,6 +272,18 @@ let%bench_fun "dirname_exn, absolute" =
 let%bench_fun "dirname_exn, relative" =
   let t = Sys.opaque_identity (of_string "foo/bar/baz") in
   fun () -> dirname_exn t
+;;
+
+let dirname_or_error = File_path.dirname_or_error
+
+let%bench_fun "dirname_or_error, absolute" =
+  let t = Sys.opaque_identity (of_string "/foo/bar/baz") in
+  fun () -> dirname_or_error t
+;;
+
+let%bench_fun "dirname_or_error, relative" =
+  let t = Sys.opaque_identity (of_string "foo/bar/baz") in
+  fun () -> dirname_or_error t
 ;;
 
 let dirname_defaulting_to_dot_or_root = File_path.dirname_defaulting_to_dot_or_root
@@ -378,6 +416,20 @@ let%bench_fun "chop_prefix_exn, relative" =
   fun () -> chop_prefix_exn t ~prefix
 ;;
 
+let chop_prefix_or_error = File_path.chop_prefix_or_error
+
+let%bench_fun "chop_prefix_or_error, absolute" =
+  let t = Sys.opaque_identity (of_string "/foo/bar/baz") in
+  let prefix = Sys.opaque_identity (of_string "/foo/bar") in
+  fun () -> chop_prefix_or_error t ~prefix
+;;
+
+let%bench_fun "chop_prefix_or_error, relative" =
+  let t = Sys.opaque_identity (of_string "foo/bar/baz") in
+  let prefix = Sys.opaque_identity (of_string "foo/bar") in
+  fun () -> chop_prefix_or_error t ~prefix
+;;
+
 let chop_prefix_if_exists = File_path.chop_prefix_if_exists
 
 let%bench_fun "chop_prefix_if_exists, absolute" =
@@ -456,6 +508,20 @@ let%bench_fun "chop_suffix_exn, relative" =
   let t = Sys.opaque_identity (of_string "foo/bar/baz") in
   let suffix = Sys.opaque_identity (File_path.Relative.of_string "bar/baz") in
   fun () -> chop_suffix_exn t ~suffix
+;;
+
+let chop_suffix_or_error = File_path.chop_suffix_or_error
+
+let%bench_fun "chop_suffix_or_error, absolute" =
+  let t = Sys.opaque_identity (of_string "/foo/bar/baz") in
+  let suffix = Sys.opaque_identity (File_path.Relative.of_string "bar/baz") in
+  fun () -> chop_suffix_or_error t ~suffix
+;;
+
+let%bench_fun "chop_suffix_or_error, relative" =
+  let t = Sys.opaque_identity (of_string "foo/bar/baz") in
+  let suffix = Sys.opaque_identity (File_path.Relative.of_string "bar/baz") in
+  fun () -> chop_suffix_or_error t ~suffix
 ;;
 
 let chop_suffix_if_exists = File_path.chop_suffix_if_exists
@@ -580,6 +646,19 @@ let%bench_fun "of_parts_relative_exn" =
   fun () -> of_parts_relative_exn parts
 ;;
 
+let of_parts_relative_or_error = File_path.of_parts_relative_or_error
+
+let%bench_fun "of_parts_relative_or_error" =
+  let parts =
+    Sys.opaque_identity
+      [ File_path.Part.of_string "foo"
+      ; File_path.Part.of_string "bar"
+      ; File_path.Part.of_string "baz"
+      ]
+  in
+  fun () -> of_parts_relative_or_error parts
+;;
+
 let of_parts_relative_defaulting_to_dot = File_path.of_parts_relative_defaulting_to_dot
 
 let%bench_fun "of_parts_relative_defaulting_to_dot, empty" =
@@ -658,6 +737,20 @@ let%bench_fun "make_relative_exn, relative" =
   let t = Sys.opaque_identity (of_string "bar/baz") in
   let if_under = Sys.opaque_identity (File_path.Absolute.of_string "/foo") in
   fun () -> make_relative_exn t ~if_under
+;;
+
+let make_relative_or_error = File_path.make_relative_or_error
+
+let%bench_fun "make_relative_or_error, absolute" =
+  let t = Sys.opaque_identity (of_string "/foo/bar/baz") in
+  let if_under = Sys.opaque_identity (File_path.Absolute.of_string "/foo") in
+  fun () -> make_relative_or_error t ~if_under
+;;
+
+let%bench_fun "make_relative_or_error, relative" =
+  let t = Sys.opaque_identity (of_string "bar/baz") in
+  let if_under = Sys.opaque_identity (File_path.Absolute.of_string "/foo") in
+  fun () -> make_relative_or_error t ~if_under
 ;;
 
 let make_relative_if_possible = File_path.make_relative_if_possible

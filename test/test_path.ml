@@ -577,6 +577,130 @@ let%expect_test _ =
      (Error ("File_path.to_relative_exn: path is absolute" /bin/exe/file))) |}]
 ;;
 
+let to_absolute_or_error = File_path.to_absolute_or_error
+
+let%expect_test _ =
+  Helpers.test
+    to_absolute_or_error
+    ~input:(module File_path)
+    ~output:(module Helpers.Or_error (File_path.Absolute))
+    ~examples:Examples.for_conversion
+    ~correctness:(fun path to_absolute_or_error ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path.Absolute))
+        (Or_error.ok to_absolute_or_error)
+        (to_absolute path)
+        ~message:"[to_absolute_or_error] and [to_absolute] are inconsistent");
+  [%expect
+    {|
+    (. -> (Error ("File_path.to_absolute_or_error: path is relative" .)))
+    (.. -> (Error ("File_path.to_absolute_or_error: path is relative" ..)))
+    (filename.txt
+     ->
+     (Error ("File_path.to_absolute_or_error: path is relative" filename.txt)))
+    (bin -> (Error ("File_path.to_absolute_or_error: path is relative" bin)))
+    (.hidden
+     ->
+     (Error ("File_path.to_absolute_or_error: path is relative" .hidden)))
+    ("This is a sentence; it has punctuation, capitalization, and spaces!"
+     ->
+     (Error
+      ("File_path.to_absolute_or_error: path is relative"
+       "This is a sentence; it has punctuation, capitalization, and spaces!")))
+    ("\001\255"
+     ->
+     (Error ("File_path.to_absolute_or_error: path is relative" "\001\255")))
+    (./. -> (Error ("File_path.to_absolute_or_error: path is relative" ./.)))
+    (../.. -> (Error ("File_path.to_absolute_or_error: path is relative" ../..)))
+    (././. -> (Error ("File_path.to_absolute_or_error: path is relative" ././.)))
+    (bin/exe
+     ->
+     (Error ("File_path.to_absolute_or_error: path is relative" bin/exe)))
+    (bin/exe/file
+     ->
+     (Error ("File_path.to_absolute_or_error: path is relative" bin/exe/file)))
+    (/ -> (Ok /))
+    (/. -> (Ok /.))
+    (/.. -> (Ok /..))
+    (/filename.txt -> (Ok /filename.txt))
+    (/bin -> (Ok /bin))
+    (/.hidden -> (Ok /.hidden))
+    ("/This is a sentence; it has punctuation, capitalization, and spaces!"
+     ->
+     (Ok "/This is a sentence; it has punctuation, capitalization, and spaces!"))
+    ("/\001\255" -> (Ok "/\001\255"))
+    (/./. -> (Ok /./.))
+    (/../.. -> (Ok /../..))
+    (/././. -> (Ok /././.))
+    (/bin/exe -> (Ok /bin/exe))
+    (/bin/exe/file -> (Ok /bin/exe/file)) |}]
+;;
+
+let to_relative_or_error = File_path.to_relative_or_error
+
+let%expect_test _ =
+  Helpers.test
+    to_relative_or_error
+    ~input:(module File_path)
+    ~output:(module Helpers.Or_error (File_path.Relative))
+    ~examples:Examples.for_conversion
+    ~correctness:(fun path to_relative_or_error ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path.Relative))
+        (Or_error.ok to_relative_or_error)
+        (to_relative path)
+        ~message:"[to_relative_or_error] and [to_relative] are inconsistent");
+  [%expect
+    {|
+    (. -> (Ok .))
+    (.. -> (Ok ..))
+    (filename.txt -> (Ok filename.txt))
+    (bin -> (Ok bin))
+    (.hidden -> (Ok .hidden))
+    ("This is a sentence; it has punctuation, capitalization, and spaces!"
+     ->
+     (Ok "This is a sentence; it has punctuation, capitalization, and spaces!"))
+    ("\001\255" -> (Ok "\001\255"))
+    (./. -> (Ok ./.))
+    (../.. -> (Ok ../..))
+    (././. -> (Ok ././.))
+    (bin/exe -> (Ok bin/exe))
+    (bin/exe/file -> (Ok bin/exe/file))
+    (/ -> (Error ("File_path.to_relative_or_error: path is absolute" /)))
+    (/. -> (Error ("File_path.to_relative_or_error: path is absolute" /.)))
+    (/.. -> (Error ("File_path.to_relative_or_error: path is absolute" /..)))
+    (/filename.txt
+     ->
+     (Error ("File_path.to_relative_or_error: path is absolute" /filename.txt)))
+    (/bin -> (Error ("File_path.to_relative_or_error: path is absolute" /bin)))
+    (/.hidden
+     ->
+     (Error ("File_path.to_relative_or_error: path is absolute" /.hidden)))
+    ("/This is a sentence; it has punctuation, capitalization, and spaces!"
+     ->
+     (Error
+      ("File_path.to_relative_or_error: path is absolute"
+       "/This is a sentence; it has punctuation, capitalization, and spaces!")))
+    ("/\001\255"
+     ->
+     (Error ("File_path.to_relative_or_error: path is absolute" "/\001\255")))
+    (/./. -> (Error ("File_path.to_relative_or_error: path is absolute" /./.)))
+    (/../..
+     ->
+     (Error ("File_path.to_relative_or_error: path is absolute" /../..)))
+    (/././.
+     ->
+     (Error ("File_path.to_relative_or_error: path is absolute" /././.)))
+    (/bin/exe
+     ->
+     (Error ("File_path.to_relative_or_error: path is absolute" /bin/exe)))
+    (/bin/exe/file
+     ->
+     (Error ("File_path.to_relative_or_error: path is absolute" /bin/exe/file))) |}]
+;;
+
 let of_absolute = File_path.of_absolute
 
 let%expect_test _ =
@@ -784,6 +908,46 @@ let%expect_test _ =
     (/long/chain/of/names/ending/in/this -> (Ok this)) |}]
 ;;
 
+let basename_or_error = File_path.basename_or_error
+
+let%expect_test _ =
+  Helpers.test
+    basename_or_error
+    ~input:(module File_path)
+    ~output:(module Helpers.Or_error (File_path.Part))
+    ~examples:Examples.for_basename_and_dirname
+    ~correctness:(fun path basename_or_error ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path.Part))
+        (Or_error.ok basename_or_error)
+        (basename path)
+        ~message:"[basename_or_error] and [basename] are inconsistent");
+  [%expect
+    {|
+    (. -> (Ok .))
+    (.. -> (Ok ..))
+    (singleton -> (Ok singleton))
+    (./file -> (Ok file))
+    (dir/. -> (Ok .))
+    (../.. -> (Ok ..))
+    (a/b -> (Ok b))
+    (a/b/c -> (Ok c))
+    (a/b/c/d -> (Ok d))
+    (long/chain/of/names/ending/in/this -> (Ok this))
+    (/ -> (Error "File_path.basename_or_error: root path"))
+    (/. -> (Ok .))
+    (/.. -> (Ok ..))
+    (/singleton -> (Ok singleton))
+    (/./file -> (Ok file))
+    (/dir/. -> (Ok .))
+    (/../.. -> (Ok ..))
+    (/a/b -> (Ok b))
+    (/a/b/c -> (Ok c))
+    (/a/b/c/d -> (Ok d))
+    (/long/chain/of/names/ending/in/this -> (Ok this)) |}]
+;;
+
 let basename_defaulting_to_dot = File_path.basename_defaulting_to_dot
 
 let%expect_test _ =
@@ -894,6 +1058,48 @@ let%expect_test _ =
     (a/b/c/d -> (Ok a/b/c))
     (long/chain/of/names/ending/in/this -> (Ok long/chain/of/names/ending/in))
     (/ -> (Error "File_path.dirname_exn: root path"))
+    (/. -> (Ok /))
+    (/.. -> (Ok /))
+    (/singleton -> (Ok /))
+    (/./file -> (Ok /.))
+    (/dir/. -> (Ok /dir))
+    (/../.. -> (Ok /..))
+    (/a/b -> (Ok /a))
+    (/a/b/c -> (Ok /a/b))
+    (/a/b/c/d -> (Ok /a/b/c))
+    (/long/chain/of/names/ending/in/this -> (Ok /long/chain/of/names/ending/in)) |}]
+;;
+
+let dirname_or_error = File_path.dirname_or_error
+
+let%expect_test _ =
+  Helpers.test
+    dirname_or_error
+    ~input:(module File_path)
+    ~output:(module Helpers.Or_error (File_path))
+    ~examples:Examples.for_basename_and_dirname
+    ~correctness:(fun path dirname_or_error ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path))
+        (Or_error.ok dirname_or_error)
+        (dirname path)
+        ~message:"[dirname_or_error] and [dirname] are inconsistent");
+  [%expect
+    {|
+    (. -> (Error ("File_path.dirname_or_error: path contains no slash" .)))
+    (.. -> (Error ("File_path.dirname_or_error: path contains no slash" ..)))
+    (singleton
+     ->
+     (Error ("File_path.dirname_or_error: path contains no slash" singleton)))
+    (./file -> (Ok .))
+    (dir/. -> (Ok dir))
+    (../.. -> (Ok ..))
+    (a/b -> (Ok a))
+    (a/b/c -> (Ok a/b))
+    (a/b/c/d -> (Ok a/b/c))
+    (long/chain/of/names/ending/in/this -> (Ok long/chain/of/names/ending/in))
+    (/ -> (Error "File_path.dirname_or_error: root path"))
     (/. -> (Ok /))
     (/.. -> (Ok /))
     (/singleton -> (Ok /))
@@ -1230,6 +1436,109 @@ let%expect_test _ =
       ("File_path.chop_prefix_exn: not a prefix" ((path a/b/c) (prefix /a/b))))) |}]
 ;;
 
+let chop_prefix_or_error = File_path.chop_prefix_or_error
+
+let%expect_test _ =
+  Helpers.test
+    (fun { t; prefix } -> chop_prefix_or_error t ~prefix)
+    ~input:(module Helpers.With_prefix (File_path))
+    ~output:(module Helpers.Or_error (File_path.Relative))
+    ~examples:Examples.for_chop_prefix
+    ~correctness:(fun { t; prefix } chop_prefix_or_error ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path.Relative))
+        (chop_prefix t ~prefix)
+        (Or_error.ok chop_prefix_or_error)
+        ~message:"[chop_prefix_or_error] and [chop_prefix] are inconsistent");
+  [%expect
+    {|
+    (((t ..) (prefix .))
+     ->
+     (Error
+      ("File_path.chop_prefix_or_error: not a prefix" ((path ..) (prefix .)))))
+    (((t ./b) (prefix ./a))
+     ->
+     (Error
+      ("File_path.chop_prefix_or_error: not a prefix" ((path ./b) (prefix ./a)))))
+    (((t c/d) (prefix a/b))
+     ->
+     (Error
+      ("File_path.chop_prefix_or_error: not a prefix" ((path c/d) (prefix a/b)))))
+    (((t a) (prefix a/b/c))
+     ->
+     (Error
+      ("File_path.chop_prefix_or_error: not a prefix" ((path a) (prefix a/b/c)))))
+    (((t a/b) (prefix a/b/c))
+     ->
+     (Error
+      ("File_path.chop_prefix_or_error: not a prefix" ((path a/b) (prefix a/b/c)))))
+    (((t .) (prefix .)) -> (Ok .))
+    (((t ..) (prefix ..)) -> (Ok .))
+    (((t a/b/c) (prefix a/b/c)) -> (Ok .))
+    (((t ./file) (prefix .)) -> (Ok file))
+    (((t dir/.) (prefix dir)) -> (Ok .))
+    (((t ../..) (prefix ..)) -> (Ok ..))
+    (((t a/b/c/d) (prefix a)) -> (Ok b/c/d))
+    (((t a/b/c/d) (prefix a/b)) -> (Ok c/d))
+    (((t a/b/c/d) (prefix a/b/c)) -> (Ok d))
+    (((t long/chain/of/names/ending/in/this) (prefix long/chain/of/names))
+     ->
+     (Ok ending/in/this))
+    (((t /) (prefix /)) -> (Ok .))
+    (((t /..) (prefix /.))
+     ->
+     (Error
+      ("File_path.chop_prefix_or_error: not a prefix" ((path /..) (prefix /.)))))
+    (((t /./b) (prefix /./a))
+     ->
+     (Error
+      ("File_path.chop_prefix_or_error: not a prefix" ((path /./b) (prefix /./a)))))
+    (((t /c/d) (prefix /a/b))
+     ->
+     (Error
+      ("File_path.chop_prefix_or_error: not a prefix" ((path /c/d) (prefix /a/b)))))
+    (((t /a) (prefix /a/b/c))
+     ->
+     (Error
+      ("File_path.chop_prefix_or_error: not a prefix" ((path /a) (prefix /a/b/c)))))
+    (((t /a/b) (prefix /a/b/c))
+     ->
+     (Error
+      ("File_path.chop_prefix_or_error: not a prefix"
+       ((path /a/b) (prefix /a/b/c)))))
+    (((t /.) (prefix /.)) -> (Ok .))
+    (((t /..) (prefix /..)) -> (Ok .))
+    (((t /a/b/c) (prefix /a/b/c)) -> (Ok .))
+    (((t /./file) (prefix /.)) -> (Ok file))
+    (((t /dir/.) (prefix /dir)) -> (Ok .))
+    (((t /../..) (prefix /..)) -> (Ok ..))
+    (((t /a/b/c/d) (prefix /a)) -> (Ok b/c/d))
+    (((t /a/b/c/d) (prefix /a/b)) -> (Ok c/d))
+    (((t /a/b/c/d) (prefix /a/b/c)) -> (Ok d))
+    (((t /long/chain/of/names/ending/in/this) (prefix /long/chain/of/names))
+     ->
+     (Ok ending/in/this))
+    (((t /) (prefix .))
+     ->
+     (Error
+      ("File_path.chop_prefix_or_error: not a prefix" ((path /) (prefix .)))))
+    (((t .) (prefix /))
+     ->
+     (Error
+      ("File_path.chop_prefix_or_error: not a prefix" ((path .) (prefix /)))))
+    (((t /a/b/c) (prefix a/b))
+     ->
+     (Error
+      ("File_path.chop_prefix_or_error: not a prefix"
+       ((path /a/b/c) (prefix a/b)))))
+    (((t a/b/c) (prefix /a/b))
+     ->
+     (Error
+      ("File_path.chop_prefix_or_error: not a prefix"
+       ((path a/b/c) (prefix /a/b))))) |}]
+;;
+
 let chop_prefix_if_exists = File_path.chop_prefix_if_exists
 
 let%expect_test _ =
@@ -1454,6 +1763,94 @@ let%expect_test _ =
      ->
      (Error
       ("File_path.chop_suffix_exn: not a suffix" ((path /b/c) (suffix a/b/c)))))
+    (((t /.) (suffix .)) -> (Ok /))
+    (((t /..) (suffix ..)) -> (Ok /))
+    (((t /a/b/c) (suffix a/b/c)) -> (Ok /))
+    (((t /./file) (suffix file)) -> (Ok /.))
+    (((t /dir/.) (suffix .)) -> (Ok /dir))
+    (((t /../..) (suffix ..)) -> (Ok /..))
+    (((t /a/b/c/d) (suffix b/c/d)) -> (Ok /a))
+    (((t /a/b/c/d) (suffix c/d)) -> (Ok /a/b))
+    (((t /a/b/c/d) (suffix d)) -> (Ok /a/b/c))
+    (((t /long/chain/of/names/ending/in/this) (suffix ending/in/this))
+     ->
+     (Ok /long/chain/of/names)) |}]
+;;
+
+let chop_suffix_or_error = File_path.chop_suffix_or_error
+
+let%expect_test _ =
+  Helpers.test
+    (fun { t; suffix } -> chop_suffix_or_error t ~suffix)
+    ~input:(module Helpers.With_suffix (File_path))
+    ~output:(module Helpers.Or_error (File_path))
+    ~examples:Examples.for_chop_suffix
+    ~correctness:(fun { t; suffix } chop_suffix_or_error ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path))
+        (chop_suffix t ~suffix)
+        (Or_error.ok chop_suffix_or_error)
+        ~message:"[chop_suffix_or_error] and [chop_suffix] are inconsistent");
+  [%expect
+    {|
+    (((t ..) (suffix .))
+     ->
+     (Error
+      ("File_path.chop_suffix_or_error: not a suffix" ((path ..) (suffix .)))))
+    (((t b/.) (suffix a/.))
+     ->
+     (Error
+      ("File_path.chop_suffix_or_error: not a suffix" ((path b/.) (suffix a/.)))))
+    (((t c/d) (suffix a/b))
+     ->
+     (Error
+      ("File_path.chop_suffix_or_error: not a suffix" ((path c/d) (suffix a/b)))))
+    (((t c) (suffix a/b/c))
+     ->
+     (Error
+      ("File_path.chop_suffix_or_error: not a suffix" ((path c) (suffix a/b/c)))))
+    (((t b/c) (suffix a/b/c))
+     ->
+     (Error
+      ("File_path.chop_suffix_or_error: not a suffix" ((path b/c) (suffix a/b/c)))))
+    (((t .) (suffix .)) -> (Ok .))
+    (((t ..) (suffix ..)) -> (Ok .))
+    (((t a/b/c) (suffix a/b/c)) -> (Ok .))
+    (((t ./file) (suffix file)) -> (Ok .))
+    (((t dir/.) (suffix .)) -> (Ok dir))
+    (((t ../..) (suffix ..)) -> (Ok ..))
+    (((t a/b/c/d) (suffix b/c/d)) -> (Ok a))
+    (((t a/b/c/d) (suffix c/d)) -> (Ok a/b))
+    (((t a/b/c/d) (suffix d)) -> (Ok a/b/c))
+    (((t long/chain/of/names/ending/in/this) (suffix ending/in/this))
+     ->
+     (Ok long/chain/of/names))
+    (((t /) (suffix .))
+     ->
+     (Error
+      ("File_path.chop_suffix_or_error: not a suffix" ((path /) (suffix .)))))
+    (((t /..) (suffix .))
+     ->
+     (Error
+      ("File_path.chop_suffix_or_error: not a suffix" ((path /..) (suffix .)))))
+    (((t /b/.) (suffix a/.))
+     ->
+     (Error
+      ("File_path.chop_suffix_or_error: not a suffix" ((path /b/.) (suffix a/.)))))
+    (((t /c/d) (suffix a/b))
+     ->
+     (Error
+      ("File_path.chop_suffix_or_error: not a suffix" ((path /c/d) (suffix a/b)))))
+    (((t /c) (suffix a/b/c))
+     ->
+     (Error
+      ("File_path.chop_suffix_or_error: not a suffix" ((path /c) (suffix a/b/c)))))
+    (((t /b/c) (suffix a/b/c))
+     ->
+     (Error
+      ("File_path.chop_suffix_or_error: not a suffix"
+       ((path /b/c) (suffix a/b/c)))))
     (((t /.) (suffix .)) -> (Ok /))
     (((t /..) (suffix ..)) -> (Ok /))
     (((t /a/b/c) (suffix a/b/c)) -> (Ok /))
@@ -1759,6 +2156,55 @@ let%expect_test _ =
     ((.hidden bin exe.file) -> (Ok .hidden/bin/exe.file)) |}]
 ;;
 
+let of_parts_relative_or_error = File_path.of_parts_relative_or_error
+
+let%expect_test _ =
+  Helpers.test
+    of_parts_relative_or_error
+    ~input:(module Helpers.List (File_path.Part))
+    ~output:(module Helpers.Or_error (File_path))
+    ~examples:Examples.Part.lists_for_conversion
+    ~correctness:(fun parts of_parts_relative_or_error ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path))
+        (of_parts_relative parts)
+        (Or_error.ok of_parts_relative_or_error)
+        ~message:"[of_parts_relative_or_error] and [of_parts_relative] are inconsistent");
+  [%expect
+    {|
+    (() -> (Error "File_path.of_parts_relative_or_error: empty list"))
+    ((.) -> (Ok .))
+    ((..) -> (Ok ..))
+    ((filename.txt) -> (Ok filename.txt))
+    ((bin) -> (Ok bin))
+    ((.hidden) -> (Ok .hidden))
+    (("This is a sentence; it has punctuation, capitalization, and spaces!")
+     ->
+     (Ok "This is a sentence; it has punctuation, capitalization, and spaces!"))
+    (("\001\255") -> (Ok "\001\255"))
+    ((. .) -> (Ok ./.))
+    ((.. .) -> (Ok ../.))
+    ((.. .) -> (Ok ../.))
+    ((.. ..) -> (Ok ../..))
+    ((filename.txt .) -> (Ok filename.txt/.))
+    ((.. filename.txt) -> (Ok ../filename.txt))
+    ((bin .) -> (Ok bin/.))
+    ((.. bin) -> (Ok ../bin))
+    ((.hidden .) -> (Ok .hidden/.))
+    ((.. .hidden) -> (Ok ../.hidden))
+    (("This is a sentence; it has punctuation, capitalization, and spaces!" .)
+     ->
+     (Ok "This is a sentence; it has punctuation, capitalization, and spaces!/."))
+    ((.. "This is a sentence; it has punctuation, capitalization, and spaces!")
+     ->
+     (Ok "../This is a sentence; it has punctuation, capitalization, and spaces!"))
+    (("\001\255" .) -> (Ok "\001\255/."))
+    ((.. "\001\255") -> (Ok "../\001\255"))
+    ((.hidden bin.exe) -> (Ok .hidden/bin.exe))
+    ((.hidden bin exe.file) -> (Ok .hidden/bin/exe.file)) |}]
+;;
+
 let of_parts_relative_defaulting_to_dot = File_path.of_parts_relative_defaulting_to_dot
 
 let%expect_test _ =
@@ -2009,6 +2455,73 @@ let%expect_test _ =
      ->
      (Error
       ("File_path.make_relative_exn: cannot make path relative"
+       ((path /a/b) (if_under /a/b/c)))))
+    ((/. /.) -> (Ok .))
+    ((/.. /..) -> (Ok .))
+    ((/a/b/c /a/b/c) -> (Ok .))
+    ((/./file /.) -> (Ok file))
+    ((/dir/. /dir) -> (Ok .))
+    ((/../.. /..) -> (Ok ..))
+    ((/a/b/c/d /a) -> (Ok b/c/d))
+    ((/a/b/c/d /a/b) -> (Ok c/d))
+    ((/a/b/c/d /a/b/c) -> (Ok d))
+    ((/long/chain/of/names/ending/in/this /long/chain/of/names)
+     ->
+     (Ok ending/in/this)) |}]
+;;
+
+let make_relative_or_error = File_path.make_relative_or_error
+
+let%expect_test _ =
+  Helpers.test
+    (fun (path, if_under) -> make_relative_or_error path ~if_under)
+    ~input:(module Helpers.Tuple2 (File_path) (File_path.Absolute))
+    ~output:(module Helpers.Or_error (File_path.Relative))
+    ~examples:Examples.for_make_relative
+    ~correctness:(fun (path, if_under) make_relative_or_error ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path.Relative))
+        (Or_error.ok make_relative_or_error)
+        (make_relative path ~if_under)
+        ~message:"[make_relative_or_error] and [make_relative] are inconsistent");
+  [%expect
+    {|
+    ((. /) -> (Ok .))
+    ((.. /) -> (Ok ..))
+    ((a/b/c /) -> (Ok a/b/c))
+    ((file /.) -> (Ok file))
+    ((. /dir) -> (Ok .))
+    ((.. /..) -> (Ok ..))
+    ((b/c/d /a) -> (Ok b/c/d))
+    ((c/d /a/b) -> (Ok c/d))
+    ((d /a/b/c) -> (Ok d))
+    ((ending/in/this /long/chain/of/names) -> (Ok ending/in/this))
+    ((/ /) -> (Ok .))
+    ((/.. /.)
+     ->
+     (Error
+      ("File_path.make_relative_or_error: cannot make path relative"
+       ((path /..) (if_under /.)))))
+    ((/./b /./a)
+     ->
+     (Error
+      ("File_path.make_relative_or_error: cannot make path relative"
+       ((path /./b) (if_under /./a)))))
+    ((/c/d /a/b)
+     ->
+     (Error
+      ("File_path.make_relative_or_error: cannot make path relative"
+       ((path /c/d) (if_under /a/b)))))
+    ((/a /a/b/c)
+     ->
+     (Error
+      ("File_path.make_relative_or_error: cannot make path relative"
+       ((path /a) (if_under /a/b/c)))))
+    ((/a/b /a/b/c)
+     ->
+     (Error
+      ("File_path.make_relative_or_error: cannot make path relative"
        ((path /a/b) (if_under /a/b/c)))))
     ((/. /.) -> (Ok .))
     ((/.. /..) -> (Ok .))

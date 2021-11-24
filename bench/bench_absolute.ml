@@ -98,6 +98,13 @@ let%bench_fun "basename_exn" =
   fun () -> basename_exn t
 ;;
 
+let basename_or_error = File_path.Absolute.basename_or_error
+
+let%bench_fun "basename_or_error" =
+  let t = Sys.opaque_identity (of_string "/foo/bar/baz") in
+  fun () -> basename_or_error t
+;;
+
 let basename_defaulting_to_dot = File_path.Absolute.basename_defaulting_to_dot
 
 let%bench_fun "basename_defaulting_to_dot, name" =
@@ -127,6 +134,13 @@ let dirname_exn = File_path.Absolute.dirname_exn
 let%bench_fun "dirname_exn" =
   let t = Sys.opaque_identity (of_string "/foo/bar/baz") in
   fun () -> dirname_exn t
+;;
+
+let dirname_or_error = File_path.Absolute.dirname_or_error
+
+let%bench_fun "dirname_or_error" =
+  let t = Sys.opaque_identity (of_string "/foo/bar/baz") in
+  fun () -> dirname_or_error t
 ;;
 
 let dirname_defaulting_to_root = File_path.Absolute.dirname_defaulting_to_root
@@ -203,6 +217,14 @@ let%bench_fun "chop_prefix_exn" =
   fun () -> chop_prefix_exn t ~prefix
 ;;
 
+let chop_prefix_or_error = File_path.Absolute.chop_prefix_or_error
+
+let%bench_fun "chop_prefix_or_error" =
+  let t = Sys.opaque_identity (of_string "/foo/bar/baz") in
+  let prefix = Sys.opaque_identity (of_string "/foo/bar") in
+  fun () -> chop_prefix_or_error t ~prefix
+;;
+
 let is_suffix = File_path.Absolute.is_suffix
 
 let%bench_fun "is_suffix, true" =
@@ -237,6 +259,14 @@ let%bench_fun "chop_suffix_exn" =
   let t = Sys.opaque_identity (of_string "/foo/bar/baz") in
   let suffix = Sys.opaque_identity (File_path.Relative.of_string "bar/baz") in
   fun () -> chop_suffix_exn t ~suffix
+;;
+
+let chop_suffix_or_error = File_path.Absolute.chop_suffix_or_error
+
+let%bench_fun "chop_suffix_or_error" =
+  let t = Sys.opaque_identity (of_string "/foo/bar/baz") in
+  let suffix = Sys.opaque_identity (File_path.Relative.of_string "bar/baz") in
+  fun () -> chop_suffix_or_error t ~suffix
 ;;
 
 let chop_suffix_if_exists = File_path.Absolute.chop_suffix_if_exists

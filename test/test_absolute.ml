@@ -242,6 +242,36 @@ let%expect_test _ =
     (/long/chain/of/names/ending/in/this -> (Ok this)) |}]
 ;;
 
+let basename_or_error = File_path.Absolute.basename_or_error
+
+let%expect_test _ =
+  Helpers.test
+    basename_or_error
+    ~input:(module File_path.Absolute)
+    ~output:(module Helpers.Or_error (File_path.Part))
+    ~examples:Examples.Absolute.for_basename_and_dirname
+    ~correctness:(fun absolute basename_or_error ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path.Part))
+        (Or_error.ok basename_or_error)
+        (basename absolute)
+        ~message:"[basename_or_error] and [basename] are inconsistent");
+  [%expect
+    {|
+    (/ -> (Error "File_path.Absolute.basename_or_error: root path"))
+    (/. -> (Ok .))
+    (/.. -> (Ok ..))
+    (/singleton -> (Ok singleton))
+    (/./file -> (Ok file))
+    (/dir/. -> (Ok .))
+    (/../.. -> (Ok ..))
+    (/a/b -> (Ok b))
+    (/a/b/c -> (Ok c))
+    (/a/b/c/d -> (Ok d))
+    (/long/chain/of/names/ending/in/this -> (Ok this)) |}]
+;;
+
 let basename_defaulting_to_dot = File_path.Absolute.basename_defaulting_to_dot
 
 let%expect_test _ =
@@ -320,6 +350,36 @@ let%expect_test _ =
   [%expect
     {|
     (/ -> (Error "File_path.Absolute.dirname_exn: root path"))
+    (/. -> (Ok /))
+    (/.. -> (Ok /))
+    (/singleton -> (Ok /))
+    (/./file -> (Ok /.))
+    (/dir/. -> (Ok /dir))
+    (/../.. -> (Ok /..))
+    (/a/b -> (Ok /a))
+    (/a/b/c -> (Ok /a/b))
+    (/a/b/c/d -> (Ok /a/b/c))
+    (/long/chain/of/names/ending/in/this -> (Ok /long/chain/of/names/ending/in)) |}]
+;;
+
+let dirname_or_error = File_path.Absolute.dirname_or_error
+
+let%expect_test _ =
+  Helpers.test
+    dirname_or_error
+    ~input:(module File_path.Absolute)
+    ~output:(module Helpers.Or_error (File_path.Absolute))
+    ~examples:Examples.Absolute.for_basename_and_dirname
+    ~correctness:(fun absolute dirname_or_error ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path.Absolute))
+        (Or_error.ok dirname_or_error)
+        (dirname absolute)
+        ~message:"[dirname_or_error] and [dirname] are inconsistent");
+  [%expect
+    {|
+    (/ -> (Error "File_path.Absolute.dirname_or_error: root path"))
     (/. -> (Ok /))
     (/.. -> (Ok /))
     (/singleton -> (Ok /))
@@ -553,6 +613,63 @@ let%expect_test _ =
      (Ok ending/in/this)) |}]
 ;;
 
+let chop_prefix_or_error = File_path.Absolute.chop_prefix_or_error
+
+let%expect_test _ =
+  Helpers.test
+    (fun { t; prefix } -> chop_prefix_or_error t ~prefix)
+    ~input:(module Helpers.With_prefix (File_path.Absolute))
+    ~output:(module Helpers.Or_error (File_path.Relative))
+    ~examples:Examples.Absolute.for_chop_prefix
+    ~correctness:(fun { t; prefix } chop_prefix_or_error ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path.Relative))
+        (chop_prefix t ~prefix)
+        (Or_error.ok chop_prefix_or_error)
+        ~message:"[chop_prefix_or_error] and [chop_prefix] are inconsistent");
+  [%expect
+    {|
+    (((t /) (prefix /)) -> (Ok .))
+    (((t /..) (prefix /.))
+     ->
+     (Error
+      ("File_path.Absolute.chop_prefix_or_error: not a prefix"
+       ((path /..) (prefix /.)))))
+    (((t /./b) (prefix /./a))
+     ->
+     (Error
+      ("File_path.Absolute.chop_prefix_or_error: not a prefix"
+       ((path /./b) (prefix /./a)))))
+    (((t /c/d) (prefix /a/b))
+     ->
+     (Error
+      ("File_path.Absolute.chop_prefix_or_error: not a prefix"
+       ((path /c/d) (prefix /a/b)))))
+    (((t /a) (prefix /a/b/c))
+     ->
+     (Error
+      ("File_path.Absolute.chop_prefix_or_error: not a prefix"
+       ((path /a) (prefix /a/b/c)))))
+    (((t /a/b) (prefix /a/b/c))
+     ->
+     (Error
+      ("File_path.Absolute.chop_prefix_or_error: not a prefix"
+       ((path /a/b) (prefix /a/b/c)))))
+    (((t /.) (prefix /.)) -> (Ok .))
+    (((t /..) (prefix /..)) -> (Ok .))
+    (((t /a/b/c) (prefix /a/b/c)) -> (Ok .))
+    (((t /./file) (prefix /.)) -> (Ok file))
+    (((t /dir/.) (prefix /dir)) -> (Ok .))
+    (((t /../..) (prefix /..)) -> (Ok ..))
+    (((t /a/b/c/d) (prefix /a)) -> (Ok b/c/d))
+    (((t /a/b/c/d) (prefix /a/b)) -> (Ok c/d))
+    (((t /a/b/c/d) (prefix /a/b/c)) -> (Ok d))
+    (((t /long/chain/of/names/ending/in/this) (prefix /long/chain/of/names))
+     ->
+     (Ok ending/in/this)) |}]
+;;
+
 let is_suffix = File_path.Absolute.is_suffix
 
 let%expect_test _ =
@@ -664,6 +781,67 @@ let%expect_test _ =
      ->
      (Error
       ("File_path.Absolute.chop_suffix_exn: not a suffix"
+       ((path /b/c) (suffix a/b/c)))))
+    (((t /.) (suffix .)) -> (Ok /))
+    (((t /..) (suffix ..)) -> (Ok /))
+    (((t /a/b/c) (suffix a/b/c)) -> (Ok /))
+    (((t /./file) (suffix file)) -> (Ok /.))
+    (((t /dir/.) (suffix .)) -> (Ok /dir))
+    (((t /../..) (suffix ..)) -> (Ok /..))
+    (((t /a/b/c/d) (suffix b/c/d)) -> (Ok /a))
+    (((t /a/b/c/d) (suffix c/d)) -> (Ok /a/b))
+    (((t /a/b/c/d) (suffix d)) -> (Ok /a/b/c))
+    (((t /long/chain/of/names/ending/in/this) (suffix ending/in/this))
+     ->
+     (Ok /long/chain/of/names)) |}]
+;;
+
+let chop_suffix_or_error = File_path.Absolute.chop_suffix_or_error
+
+let%expect_test _ =
+  Helpers.test
+    (fun { t; suffix } -> chop_suffix_or_error t ~suffix)
+    ~input:(module Helpers.With_suffix (File_path.Absolute))
+    ~output:(module Helpers.Or_error (File_path.Absolute))
+    ~examples:Examples.Absolute.for_chop_suffix
+    ~correctness:(fun { t; suffix } chop_suffix_or_error ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path.Absolute))
+        (chop_suffix t ~suffix)
+        (Or_error.ok chop_suffix_or_error)
+        ~message:"[chop_suffix_or_error] and [chop_suffix] are inconsistent");
+  [%expect
+    {|
+    (((t /) (suffix .))
+     ->
+     (Error
+      ("File_path.Absolute.chop_suffix_or_error: not a suffix"
+       ((path /) (suffix .)))))
+    (((t /..) (suffix .))
+     ->
+     (Error
+      ("File_path.Absolute.chop_suffix_or_error: not a suffix"
+       ((path /..) (suffix .)))))
+    (((t /b/.) (suffix a/.))
+     ->
+     (Error
+      ("File_path.Absolute.chop_suffix_or_error: not a suffix"
+       ((path /b/.) (suffix a/.)))))
+    (((t /c/d) (suffix a/b))
+     ->
+     (Error
+      ("File_path.Absolute.chop_suffix_or_error: not a suffix"
+       ((path /c/d) (suffix a/b)))))
+    (((t /c) (suffix a/b/c))
+     ->
+     (Error
+      ("File_path.Absolute.chop_suffix_or_error: not a suffix"
+       ((path /c) (suffix a/b/c)))))
+    (((t /b/c) (suffix a/b/c))
+     ->
+     (Error
+      ("File_path.Absolute.chop_suffix_or_error: not a suffix"
        ((path /b/c) (suffix a/b/c)))))
     (((t /.) (suffix .)) -> (Ok /))
     (((t /..) (suffix ..)) -> (Ok /))

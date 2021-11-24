@@ -34,6 +34,10 @@ module type S = sig
       only one part. *)
   val dirname_exn : t -> t
 
+  (** Returns all parts of the given path but the final one, or returns an error if the
+      path has only one part. *)
+  val dirname_or_error : t -> t Or_error.t
+
   (** Returns all parts of the given path but the final one, or [dot] if the path has only
       one part. *)
   val dirname_defaulting_to_dot : t -> t
@@ -46,6 +50,10 @@ module type S = sig
       path. *)
   val top_dir_exn : t -> Part.t
 
+  (** Returns the first part of a multiple-part path, or returns an error if given a
+      single-part path. *)
+  val top_dir_or_error : t -> Part.t Or_error.t
+
   (** Returns the first part of a multiple-part path, or [Part.dot] if given a single-part
       path. *)
   val top_dir_defaulting_to_dot : t -> Part.t
@@ -57,6 +65,10 @@ module type S = sig
   (** Returns all but the first part of a multiple-part relative path, or raises if given
       a single-part path. *)
   val all_but_top_dir_exn : t -> t
+
+  (** Returns all but the first part of a multiple-part relative path, or returns an error
+      if given a single-part path. *)
+  val all_but_top_dir_or_error : t -> t Or_error.t
 
   (** Returns all but the first part of a multiple-part relative path, or returns the path
       unchanged if given a single-part path. *)
@@ -91,6 +103,10 @@ module type S = sig
       prefix of the path's parts. If the path equals [prefix], returns [dot]. *)
   val chop_prefix_exn : t -> prefix:t -> t
 
+  (** Returns all parts of the given path after [prefix], or returns an error if [prefix]
+      is not a prefix of the path's parts. If the path equals [prefix], returns [dot]. *)
+  val chop_prefix_or_error : t -> prefix:t -> t Or_error.t
+
   (** Returns all parts of the given path after [prefix], or returns the path unchanged if
       [prefix] is not a prefix of the path's parts. If the path equals [prefix], returns
       [dot]. *)
@@ -103,6 +119,10 @@ module type S = sig
   (** Returns all parts of the given path before [suffix], or raises if [suffix] is not a
       suffix of the path's parts. If the path equals [suffix], returns [dot]. *)
   val chop_suffix_exn : t -> suffix:t -> t
+
+  (** Returns all parts of the given path before [suffix], or returns an error if [suffix]
+      is not a suffix of the path's parts. If the path equals [suffix], returns [dot]. *)
+  val chop_suffix_or_error : t -> suffix:t -> t Or_error.t
 
   (** Returns all parts of the given path before [suffix], or returns the path unchanged
       if [suffix] is not a suffix of the path's parts. If the path equals [suffix],
@@ -135,6 +155,10 @@ module type S = sig
   (** Returns a relative path consisting of the given one or more parts, or raises if the
       list of parts is empty. *)
   val of_parts_exn : Part.t list -> t
+
+  (** Returns a relative path consisting of the given one or more parts, or returns an
+      error if the list of parts is empty. *)
+  val of_parts_or_error : Part.t list -> t Or_error.t
 
   (** Returns a relative path consisting of the given one or more parts, or [dot] if the
       list of parts is empty. *)

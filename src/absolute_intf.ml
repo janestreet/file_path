@@ -25,6 +25,9 @@ module type S = sig
   (** Returns the final part of the given path, or raises if given [root]. *)
   val basename_exn : t -> Part.t
 
+  (** Returns the final part of the given path, or returns an error if given [root]. *)
+  val basename_or_error : t -> Part.t Or_error.t
+
   (** Returns the final part of the given path, or [Part.dot] if given [root]. *)
   val basename_defaulting_to_dot : t -> Part.t
 
@@ -33,6 +36,10 @@ module type S = sig
 
   (** Returns all parts of the given path but the final one, or raises if given [root]. *)
   val dirname_exn : t -> t
+
+  (** Returns all parts of the given path but the final one, or returns an error if given
+      [root]. *)
+  val dirname_or_error : t -> t Or_error.t
 
   (** Returns all parts of the given path but the final one, or [root] if given [root]. *)
   val dirname_defaulting_to_root : t -> t
@@ -62,6 +69,11 @@ module type S = sig
       prefix of the path's parts. If the path equals [prefix], returns [Relative.dot]. *)
   val chop_prefix_exn : t -> prefix:t -> Relative.t
 
+  (** Returns all parts of the given path after [prefix], or returns an error if [prefix]
+      is not a prefix of the path's parts. If the path equals [prefix], returns
+      [Relative.dot]. *)
+  val chop_prefix_or_error : t -> prefix:t -> Relative.t Or_error.t
+
   (** Returns all parts of the given path before [suffix], or [None] if [suffix] is not a
       suffix of the path's parts. *)
   val chop_suffix : t -> suffix:Relative.t -> t option
@@ -69,6 +81,10 @@ module type S = sig
   (** Returns all parts of the given path before [suffix], or raises if [suffix] is not a
       suffix of the path's parts. *)
   val chop_suffix_exn : t -> suffix:Relative.t -> t
+
+  (** Returns all parts of the given path before [suffix], or returns an error if [suffix]
+      is not a suffix of the path's parts. *)
+  val chop_suffix_or_error : t -> suffix:Relative.t -> t Or_error.t
 
   (** Returns all parts of the given path before [suffix], or returns the path unchanged
       if [suffix] is not a suffix of the path's parts. *)

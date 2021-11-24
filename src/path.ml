@@ -38,6 +38,20 @@ let to_relative_exn t =
   else raise_s [%sexp "File_path.to_relative_exn: path is absolute", (t : t)]
 ;;
 
+let to_absolute_or_error t =
+  if is_absolute t
+  then Ok (unchecked_to_absolute t)
+  else
+    Or_error.error_s [%sexp "File_path.to_absolute_or_error: path is relative", (t : t)]
+;;
+
+let to_relative_or_error t =
+  if is_relative t
+  then Ok (unchecked_to_relative t)
+  else
+    Or_error.error_s [%sexp "File_path.to_relative_or_error: path is absolute", (t : t)]
+;;
+
 let root = of_absolute Absolute.root
 let dot = of_relative Relative.dot
 let dot_dot = of_relative Relative.dot_dot
@@ -58,6 +72,17 @@ let basename_exn t =
       | string ->
         raise_s
           [%sexp "File_path.basename_exn: path contains no slash", (string : string)])
+;;
+
+let basename_or_error t =
+  Path_string.basename
+    (to_string t)
+    ~if_some:(fun string -> Ok (Part.Expert.unchecked_of_canonical_string string))
+    ~if_none:(function
+      | "/" -> Or_error.error_s [%sexp "File_path.basename_or_error: root path"]
+      | string ->
+        Or_error.error_s
+          [%sexp "File_path.basename_or_error: path contains no slash", (string : string)])
 ;;
 
 let basename_defaulting_to_dot t =
@@ -82,6 +107,17 @@ let dirname_exn t =
       | "/" -> raise_s [%sexp "File_path.dirname_exn: root path"]
       | string ->
         raise_s [%sexp "File_path.dirname_exn: path contains no slash", (string : string)])
+;;
+
+let dirname_or_error t =
+  Path_string.dirname
+    (to_string t)
+    ~if_some:(fun string -> Ok (Expert.unchecked_of_canonical_string string))
+    ~if_none:(function
+      | "/" -> Or_error.error_s [%sexp "File_path.dirname_or_error: root path"]
+      | string ->
+        Or_error.error_s
+          [%sexp "File_path.dirname_or_error: path contains no slash", (string : string)])
 ;;
 
 let dirname_defaulting_to_dot_or_root t =
@@ -132,6 +168,18 @@ let chop_prefix_exn t ~prefix =
           "File_path.chop_prefix_exn: not a prefix", { path : string; prefix : string }])
 ;;
 
+let chop_prefix_or_error t ~prefix =
+  Path_string.chop_prefix
+    (to_string t)
+    ~prefix:(to_string prefix)
+    ~if_some:(fun string -> Ok (Relative.Expert.unchecked_of_canonical_string string))
+    ~if_none:(fun path ~prefix ->
+      Or_error.error_s
+        [%sexp
+          "File_path.chop_prefix_or_error: not a prefix"
+        , { path : string; prefix : string }])
+;;
+
 let chop_prefix_if_exists t ~prefix =
   Path_string.chop_prefix
     (to_string t)
@@ -161,6 +209,18 @@ let chop_suffix_exn t ~suffix =
       raise_s
         [%sexp
           "File_path.chop_suffix_exn: not a suffix", { path : string; suffix : string }])
+;;
+
+let chop_suffix_or_error t ~suffix =
+  Path_string.chop_suffix
+    (to_string t)
+    ~suffix:(Relative.to_string suffix)
+    ~if_some:(fun string -> Ok (Expert.unchecked_of_canonical_string string))
+    ~if_none:(fun path ~suffix ->
+      Or_error.error_s
+        [%sexp
+          "File_path.chop_suffix_or_error: not a suffix"
+        , { path : string; suffix : string }])
 ;;
 
 let chop_suffix_if_exists t ~suffix =
@@ -207,6 +267,14 @@ let of_parts_relative_exn parts =
     ~if_none:(fun () -> raise_s [%sexp "File_path.of_parts_relative_exn: empty list"])
 ;;
 
+let of_parts_relative_or_error parts =
+  Path_string.of_parts_relative
+    (parts : Part.t list :> string list)
+    ~if_some:(fun string -> Ok (Expert.unchecked_of_canonical_string string))
+    ~if_none:(fun () ->
+      Or_error.error_s [%sexp "File_path.of_parts_relative_or_error: empty list"])
+;;
+
 let of_parts_relative_defaulting_to_dot parts =
   Path_string.of_parts_relative
     (parts : Part.t list :> string list)
@@ -246,6 +314,21 @@ let make_relative_exn t ~if_under =
         raise_s
           [%sexp
             "File_path.make_relative_exn: cannot make path relative"
+          , { path = (string : string); if_under = (prefix : string) }])
+;;
+
+let make_relative_or_error t ~if_under =
+  if is_relative t
+  then Ok (unchecked_to_relative t)
+  else
+    Path_string.chop_prefix
+      (to_string t)
+      ~prefix:(Absolute.to_string if_under)
+      ~if_some:(fun string -> Ok (Relative.Expert.unchecked_of_canonical_string string))
+      ~if_none:(fun string ~prefix ->
+        Or_error.error_s
+          [%sexp
+            "File_path.make_relative_or_error: cannot make path relative"
           , { path = (string : string); if_under = (prefix : string) }])
 ;;
 

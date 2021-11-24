@@ -19,7 +19,7 @@ depends: [
   "ppx_jane"
   "dune"                      {>= "2.0.0"}
 ]
-synopsis: "A library for typed manipulation of UNIX-style file paths."
+synopsis: "A library for typed manipulation of UNIX-style file paths"
 description: "
 A library for typed manipulation of UNIX-style file paths.
 "

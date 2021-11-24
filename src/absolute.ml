@@ -38,6 +38,19 @@ let basename_exn t =
             "File_path.Absolute.basename_exn: path contains no slash", (string : string)])
 ;;
 
+let basename_or_error t =
+  Path_string.basename
+    (to_string t)
+    ~if_some:(fun string -> Ok (Part.Expert.unchecked_of_canonical_string string))
+    ~if_none:(function
+      | "/" -> Or_error.error_s [%sexp "File_path.Absolute.basename_or_error: root path"]
+      | string ->
+        Or_error.error_s
+          [%sexp
+            "File_path.Absolute.basename_or_error: path contains no slash"
+          , (string : string)])
+;;
+
 let basename_defaulting_to_dot t =
   Path_string.basename
     (to_string t)
@@ -62,6 +75,19 @@ let dirname_exn t =
         raise_s
           [%sexp
             "File_path.Absolute.dirname_exn: path contains no slash", (string : string)])
+;;
+
+let dirname_or_error t =
+  Path_string.dirname
+    (to_string t)
+    ~if_some:(fun string -> Ok (Expert.unchecked_of_canonical_string string))
+    ~if_none:(function
+      | "/" -> Or_error.error_s [%sexp "File_path.Absolute.dirname_or_error: root path"]
+      | string ->
+        Or_error.error_s
+          [%sexp
+            "File_path.Absolute.dirname_or_error: path contains no slash"
+          , (string : string)])
 ;;
 
 let dirname_defaulting_to_root t =
@@ -113,6 +139,18 @@ let chop_prefix_exn t ~prefix =
         , { path : string; prefix : string }])
 ;;
 
+let chop_prefix_or_error t ~prefix =
+  Path_string.chop_prefix
+    (to_string t)
+    ~prefix:(to_string prefix)
+    ~if_some:(fun string -> Ok (Relative.Expert.unchecked_of_canonical_string string))
+    ~if_none:(fun path ~prefix ->
+      Or_error.error_s
+        [%sexp
+          "File_path.Absolute.chop_prefix_or_error: not a prefix"
+        , { path : string; prefix : string }])
+;;
+
 let is_suffix t ~suffix =
   Path_string.is_suffix (to_string t) ~suffix:(Relative.to_string suffix)
 ;;
@@ -134,6 +172,18 @@ let chop_suffix_exn t ~suffix =
       raise_s
         [%sexp
           "File_path.Absolute.chop_suffix_exn: not a suffix"
+        , { path : string; suffix : string }])
+;;
+
+let chop_suffix_or_error t ~suffix =
+  Path_string.chop_suffix
+    (to_string t)
+    ~suffix:(Relative.to_string suffix)
+    ~if_some:(fun string -> Ok (Expert.unchecked_of_canonical_string string))
+    ~if_none:(fun path ~suffix ->
+      Or_error.error_s
+        [%sexp
+          "File_path.Absolute.chop_suffix_or_error: not a suffix"
         , { path : string; suffix : string }])
 ;;
 
