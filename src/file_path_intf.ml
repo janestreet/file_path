@@ -9,7 +9,7 @@ module type Absolute = Absolute.S
 module type Path = Path.S
 
 module type Stable = sig
-  module Types : Types.S
+  module Types : Types
   module Part : Common.Stable with module Type := Types.Part
   module Relative : Common.Stable with module Type := Types.Relative
   module Absolute : Common.Stable with module Type := Types.Absolute
@@ -18,12 +18,12 @@ end
 
 module type S = sig
   (** Everything below uses the types and subtyping relationships of [Types]. *)
-  module Types : Types.S
+  module Types : Types
 
-  module Part : Part.S with module Types := Types
-  module Relative : Relative.S with module Types := Types
-  module Absolute : Absolute.S with module Types := Types
-  include Path.S with module Types := Types
+  module Part : Part with module Types := Types
+  module Relative : Relative with module Types := Types
+  module Absolute : Absolute with module Types := Types
+  include Path with module Types := Types
   module Stable : Stable with module Types := Types
 end
 
