@@ -107,6 +107,23 @@ let dirname_and_basename t =
     ~if_none:(fun _ -> None)
 ;;
 
+let append_to_basename_exn path suffix =
+  Path_string.append_to_basename
+    (to_string path)
+    ~suffix
+    ~if_valid:Expert.unchecked_of_canonical_string
+    ~if_invalid_path:(fun path ~suffix ->
+      raise_s
+        [%sexp
+          "File_path.Absolute.append_to_basename_exn: root path has no basename"
+        , { path : string; suffix : string }])
+    ~if_invalid_suffix:(fun path ~suffix ->
+      raise_s
+        [%sexp
+          "File_path.Absolute.append_to_basename_exn: suffix contains invalid characters"
+        , { path : string; suffix : string }])
+;;
+
 let append_part t part =
   Expert.unchecked_of_canonical_string
     (Path_string.append (to_string t) (Part.to_string part))

@@ -167,6 +167,20 @@ let%bench_fun "dirname_and_basename, none" =
   fun () -> dirname_and_basename t
 ;;
 
+let append_to_basename_exn = File_path.Absolute.append_to_basename_exn
+
+let%bench_fun "append_to_basename_exn, empty" =
+  let t = Sys.opaque_identity (of_string "/foo/bar") in
+  let suffix = Sys.opaque_identity "" in
+  fun () -> append_to_basename_exn t suffix
+;;
+
+let%bench_fun "append_to_basename_exn, nonempty" =
+  let t = Sys.opaque_identity (of_string "/foo/bar") in
+  let suffix = Sys.opaque_identity ".baz" in
+  fun () -> append_to_basename_exn t suffix
+;;
+
 let append_part = File_path.Absolute.append_part
 
 let%bench_fun "append_part, root" =

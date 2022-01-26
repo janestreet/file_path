@@ -47,6 +47,11 @@ module type S = sig
   (** Like [Option.both (dirname t) (basename t)]. Allocates [Some] at most once. *)
   val dirname_and_basename : t -> (t * Part.t) option
 
+  (** Adds the given string as a suffix of the path's basename. Raises if [t] is [root]
+      and therefore has no basename, or if the string contains characters that are illegal
+      for a path part. *)
+  val append_to_basename_exn : t -> string -> t
+
   (** Adds a part to the end of the path. *)
   val append_part : t -> Part.t -> t
 

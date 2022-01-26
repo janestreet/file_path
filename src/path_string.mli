@@ -39,6 +39,15 @@ val is_relative : string -> bool
     path). Asserts that the second path is relative. *)
 val append : string -> string -> string
 
+(** Appends a string suffix to a path. *)
+val append_to_basename
+  :  string
+  -> suffix:string
+  -> if_valid:(string -> 'a)
+  -> if_invalid_path:(string -> suffix:string -> 'a)
+  -> if_invalid_suffix:(string -> suffix:string -> 'a)
+  -> 'a
+
 (** Reports if the parts of [prefix] are a non-strict prefix of the parts of the other
     argument, and the paths are both absolute or both relative. *)
 val is_prefix : string -> prefix:string -> bool

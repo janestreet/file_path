@@ -28,6 +28,7 @@ module type Common = sig
   type t
 
   val strings_for_of_string : string list
+  val for_append_to_basename : (t * string) list
   val for_compare : t list
   val for_conversion : t list
 end

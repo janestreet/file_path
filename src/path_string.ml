@@ -26,7 +26,10 @@ let root_length = String.length root
 let dot = "."
 let dot_dot = ".."
 let dot_dot_length = String.length dot_dot
+let null = '\000'
+let char_is_valid c = not (Char.equal c null)
 let char_is_slash c = Char.equal c slash_char
+let char_is_valid_for_part c = char_is_valid c && not (char_is_slash c)
 let is_root string = String.equal string root
 
 (* Compare paths lexicographically as lists of parts. Compares parts inline,
@@ -59,8 +62,6 @@ let compare =
 
 (* Obviously, [is_valid] must be correct for even invalid strings. *)
 let is_valid =
-  let null = '\000' in
-  let char_is_valid c = not (Char.equal c null) in
   let is_valid string =
     (not (String.is_empty string)) && String.for_all string ~f:char_is_valid
   in
@@ -86,6 +87,14 @@ let is_canonical =
 
 let is_absolute string = String.is_prefix string ~prefix:root
 let is_relative string = not (is_absolute string)
+
+let append_to_basename path ~suffix ~if_valid ~if_invalid_path ~if_invalid_suffix =
+  if is_root path
+  then if_invalid_path path ~suffix
+  else if String.for_all suffix ~f:char_is_valid_for_part
+  then if_valid (path ^ suffix)
+  else if_invalid_suffix path ~suffix
+;;
 
 let append prefix suffix =
   (* Appending an absolute suffix makes no sense. *)

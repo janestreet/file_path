@@ -1194,6 +1194,85 @@ let%expect_test _ =
      ((/long/chain/of/names/ending/in this))) |}]
 ;;
 
+let append_to_basename_exn = File_path.append_to_basename_exn
+
+let%expect_test _ =
+  Helpers.test
+    (fun (path, string) ->
+       Or_error.try_with (fun () -> append_to_basename_exn path string))
+    ~input:(module Helpers.Tuple2 (File_path) (String))
+    ~output:(module Helpers.Or_error (File_path))
+    ~examples:Examples.for_append_to_basename
+    ~correctness:(fun (path, string) append_to_basename_exn ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path))
+        (Or_error.ok append_to_basename_exn)
+        (if equal path root || String.mem string '/' || String.mem string '\000'
+         then None
+         else Some (of_string (to_string path ^ string))));
+  [%expect
+    {|
+    ((. x) -> (Ok .x))
+    ((.. y) -> (Ok ..y))
+    ((a .b) -> (Ok a.b))
+    ((a/b .c) -> (Ok a/b.c))
+    ((a/b/c .d) -> (Ok a/b/c.d))
+    ((a/b/c "") -> (Ok a/b/c))
+    ((a/b/c invalid/slash)
+     ->
+     (Error
+      ("File_path.append_to_basename_exn: suffix contains invalid characters"
+       ((path a/b/c) (suffix invalid/slash)))))
+    ((a/b/c "invalid\000null")
+     ->
+     (Error
+      ("File_path.append_to_basename_exn: suffix contains invalid characters"
+       ((path a/b/c) (suffix "invalid\000null")))))
+    ((long/chain/of/names/ending/in -this)
+     ->
+     (Ok long/chain/of/names/ending/in-this))
+    ((/ "")
+     ->
+     (Error
+      ("File_path.append_to_basename_exn: root path has no basename"
+       ((path /) (suffix "")))))
+    ((/ x)
+     ->
+     (Error
+      ("File_path.append_to_basename_exn: root path has no basename"
+       ((path /) (suffix x)))))
+    ((/ invalid/slash)
+     ->
+     (Error
+      ("File_path.append_to_basename_exn: root path has no basename"
+       ((path /) (suffix invalid/slash)))))
+    ((/ "invalid\000null")
+     ->
+     (Error
+      ("File_path.append_to_basename_exn: root path has no basename"
+       ((path /) (suffix "invalid\000null")))))
+    ((/. x) -> (Ok /.x))
+    ((/.. y) -> (Ok /..y))
+    ((/a .b) -> (Ok /a.b))
+    ((/a/b .c) -> (Ok /a/b.c))
+    ((/a/b/c .d) -> (Ok /a/b/c.d))
+    ((/a/b/c "") -> (Ok /a/b/c))
+    ((/a/b/c invalid/slash)
+     ->
+     (Error
+      ("File_path.append_to_basename_exn: suffix contains invalid characters"
+       ((path /a/b/c) (suffix invalid/slash)))))
+    ((/a/b/c "invalid\000null")
+     ->
+     (Error
+      ("File_path.append_to_basename_exn: suffix contains invalid characters"
+       ((path /a/b/c) (suffix "invalid\000null")))))
+    ((/long/chain/of/names/ending/in -this)
+     ->
+     (Ok /long/chain/of/names/ending/in-this)) |}]
+;;
+
 let append_part = File_path.append_part
 
 let%expect_test _ =

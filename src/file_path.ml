@@ -4,6 +4,7 @@ include Path
 module Absolute = Absolute
 module Relative = Relative
 module Part = Part
+module Operators = Operators
 
 module Stable = struct
   include Path.Stable

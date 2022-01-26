@@ -222,6 +222,20 @@ let%bench_fun "top_dir_and_all_but_top_dir, none" =
   fun () -> top_dir_and_all_but_top_dir t
 ;;
 
+let append_to_basename_exn = File_path.Relative.append_to_basename_exn
+
+let%bench_fun "append_to_basename_exn, empty" =
+  let t = Sys.opaque_identity (of_string "foo/bar") in
+  let suffix = Sys.opaque_identity "" in
+  fun () -> append_to_basename_exn t suffix
+;;
+
+let%bench_fun "append_to_basename_exn, nonempty" =
+  let t = Sys.opaque_identity (of_string "foo/bar") in
+  let suffix = Sys.opaque_identity ".baz" in
+  fun () -> append_to_basename_exn t suffix
+;;
+
 let append_part = File_path.Relative.append_part
 
 let%bench_fun "append_part" =

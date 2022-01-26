@@ -1,6 +1,7 @@
 (* See comment in [test_path.ml]. *)
 
 open! Core
+open Expect_test_helpers_core
 
 type t = File_path.Part.t [@@deriving quickcheck, sexp, sexp_grammar]
 
@@ -111,6 +112,41 @@ let%expect_test _ =
     (! ("File_path.Part.invariant: invalid string" ""))
     (! ("File_path.Part.invariant: invalid string" invalid/slash))
     (! ("File_path.Part.invariant: invalid string" "invalid\000null")) |}]
+;;
+
+let append_to_basename_exn = File_path.Part.append_to_basename_exn
+
+let%expect_test _ =
+  Helpers.test
+    (fun (path, string) ->
+       Or_error.try_with (fun () -> append_to_basename_exn path string))
+    ~input:(module Helpers.Tuple2 (File_path.Part) (String))
+    ~output:(module Helpers.Or_error (File_path.Part))
+    ~examples:Examples.Part.for_append_to_basename
+    ~correctness:(fun (path, string) append_to_basename_exn ->
+      require_equal
+        [%here]
+        (module Helpers.Option (File_path.Part))
+        (Or_error.ok append_to_basename_exn)
+        (Option.try_with (fun () -> of_string (to_string path ^ string))));
+  [%expect
+    {|
+    ((. x) -> (Ok .x))
+    ((.. y) -> (Ok ..y))
+    ((a .b) -> (Ok a.b))
+    ((b invalid/slash)
+     ->
+     (Error
+      ("File_path.Part.append_to_basename_exn: suffix contains invalid characters"
+       ((path b) (suffix invalid/slash)))))
+    ((c "invalid\000null")
+     ->
+     (Error
+      ("File_path.Part.append_to_basename_exn: suffix contains invalid characters"
+       ((path c) (suffix "invalid\000null")))))
+    ((long-hyphenated-name-ending-in -this)
+     ->
+     (Ok long-hyphenated-name-ending-in-this)) |}]
 ;;
 
 (* Test command-line autocompletion separately. *)

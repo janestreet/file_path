@@ -78,6 +78,10 @@ module type S = sig
       once. *)
   val top_dir_and_all_but_top_dir : t -> (Part.t * t) option
 
+  (** Adds the given string as a suffix of the path's basename. Raises if the string
+      contains characters that are illegal for a path part. *)
+  val append_to_basename_exn : t -> string -> t
+
   (** Adds a part to the beginning of the path. *)
   val prepend_part : Part.t -> t -> t
 

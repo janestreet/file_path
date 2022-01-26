@@ -143,6 +143,19 @@ let top_dir_and_all_but_top_dir t =
     ~if_none:(fun _ -> None)
 ;;
 
+let append_to_basename_exn path suffix =
+  Path_string.append_to_basename
+    (to_string path)
+    ~suffix
+    ~if_valid:Expert.unchecked_of_canonical_string
+    ~if_invalid_path:(fun _ ~suffix:_ -> (* root path is not relative *) assert false)
+    ~if_invalid_suffix:(fun path ~suffix ->
+      raise_s
+        [%sexp
+          "File_path.Relative.append_to_basename_exn: suffix contains invalid characters"
+        , { path : string; suffix : string }])
+;;
+
 let prepend_part part t =
   Expert.unchecked_of_canonical_string
     (Path_string.append (Part.to_string part) (to_string t))

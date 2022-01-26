@@ -75,6 +75,16 @@ module Part = struct
     ]
   ;;
 
+  let strings_for_append_to_basename =
+    [ ".", "x"
+    ; "..", "y"
+    ; "a", ".b"
+    ; "b", "invalid/slash"
+    ; "c", "invalid\000null"
+    ; "long-hyphenated-name-ending-in", "-this"
+    ]
+  ;;
+
   let string_lists_for_conversion =
     let len0 = [ [] ] in
     let len1 = List.map strings_for_conversion ~f:List.return in
@@ -89,6 +99,10 @@ module Part = struct
 
   let for_conversion = strings_for_conversion |> List.map ~f:of_string
   let for_compare = strings_for_compare |> List.map ~f:of_string
+
+  let for_append_to_basename =
+    strings_for_append_to_basename |> List.map ~f:(pair_map ~f1:of_string ~f2:Fn.id)
+  ;;
 
   let lists_for_conversion =
     string_lists_for_conversion |> List.map ~f:(List.map ~f:of_string)
@@ -118,6 +132,19 @@ module Relative = struct
       ; "bin/exe/file"
       ; "bin/exe.file"
       ]
+  ;;
+
+  let strings_for_append_to_basename =
+    [ ".", "x"
+    ; "..", "y"
+    ; "a", ".b"
+    ; "a/b", ".c"
+    ; "a/b/c", ".d"
+    ; "a/b/c", ""
+    ; "a/b/c", "invalid/slash"
+    ; "a/b/c", "invalid\000null"
+    ; "long/chain/of/names/ending/in", "-this"
+    ]
   ;;
 
   let strings_for_append_part =
@@ -226,6 +253,10 @@ module Relative = struct
   let for_basename_and_dirname = strings_for_basename_and_dirname |> List.map ~f:of_string
   let for_top_dir = strings_for_top_dir |> List.map ~f:of_string
 
+  let for_append_to_basename =
+    strings_for_append_to_basename |> List.map ~f:(pair_map ~f1:of_string ~f2:Fn.id)
+  ;;
+
   let for_append_part =
     strings_for_append_part |> List.map ~f:(pair_map ~f1:of_string ~f2:Part.of_string)
   ;;
@@ -269,6 +300,13 @@ module Absolute = struct
     [ "/" ] @ List.map Relative.strings_for_basename_and_dirname ~f:make_absolute
   ;;
 
+  let strings_for_append_to_basename =
+    [ "/", ""; "/", "x"; "/", "invalid/slash"; "/", "invalid\000null" ]
+    @ List.map
+        Relative.strings_for_append_to_basename
+        ~f:(pair_map ~f1:make_absolute ~f2:Fn.id)
+  ;;
+
   let strings_for_append_part =
     [ "/", "."; "/", ".."; "/", "singleton" ]
     @ List.map Relative.strings_for_append_part ~f:(pair_map ~f1:make_absolute ~f2:Fn.id)
@@ -297,6 +335,10 @@ module Absolute = struct
   let for_conversion = strings_for_conversion |> List.map ~f:of_string
   let for_compare = strings_for_compare |> List.map ~f:of_string
   let for_basename_and_dirname = strings_for_basename_and_dirname |> List.map ~f:of_string
+
+  let for_append_to_basename =
+    strings_for_append_to_basename |> List.map ~f:(pair_map ~f1:of_string ~f2:Fn.id)
+  ;;
 
   let for_append_part =
     strings_for_append_part |> List.map ~f:(pair_map ~f1:of_string ~f2:Part.of_string)
@@ -332,6 +374,10 @@ module Path = struct
 
   let strings_for_basename_and_dirname =
     Relative.strings_for_basename_and_dirname @ Absolute.strings_for_basename_and_dirname
+  ;;
+
+  let strings_for_append_to_basename =
+    Relative.strings_for_append_to_basename @ Absolute.strings_for_append_to_basename
   ;;
 
   let strings_for_append_part =
@@ -371,6 +417,10 @@ module Path = struct
   let for_conversion = strings_for_conversion |> List.map ~f:of_string
   let for_compare = strings_for_compare |> List.map ~f:of_string
   let for_basename_and_dirname = strings_for_basename_and_dirname |> List.map ~f:of_string
+
+  let for_append_to_basename =
+    strings_for_append_to_basename |> List.map ~f:(pair_map ~f1:of_string ~f2:Fn.id)
+  ;;
 
   let for_append_part =
     strings_for_append_part |> List.map ~f:(pair_map ~f1:of_string ~f2:Part.of_string)

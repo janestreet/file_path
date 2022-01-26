@@ -28,6 +28,19 @@ include
 let dot = Expert.unchecked_of_canonical_string Path_string.dot
 let dot_dot = Expert.unchecked_of_canonical_string Path_string.dot_dot
 
+let append_to_basename_exn path suffix =
+  Path_string.append_to_basename
+    (to_string path)
+    ~suffix
+    ~if_valid:Expert.unchecked_of_canonical_string
+    ~if_invalid_path:(fun _ ~suffix:_ -> (* root path is not a part *) assert false)
+    ~if_invalid_suffix:(fun path ~suffix ->
+      raise_s
+        [%sexp
+          "File_path.Part.append_to_basename_exn: suffix contains invalid characters"
+        , { path : string; suffix : string }])
+;;
+
 include
   Quickcheckable.Of_quickcheckable
     (Path_string.Quickcheckable_part)

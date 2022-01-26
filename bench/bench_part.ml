@@ -67,3 +67,17 @@ let%bench_fun "invariant" =
   let t = Sys.opaque_identity (of_string "foobie") in
   fun () -> invariant t
 ;;
+
+let append_to_basename_exn = File_path.Part.append_to_basename_exn
+
+let%bench_fun "append_to_basename_exn, empty" =
+  let t = Sys.opaque_identity (of_string "foo") in
+  let suffix = Sys.opaque_identity "" in
+  fun () -> append_to_basename_exn t suffix
+;;
+
+let%bench_fun "append_to_basename_exn, nonempty" =
+  let t = Sys.opaque_identity (of_string "foo") in
+  let suffix = Sys.opaque_identity ".bar" in
+  fun () -> append_to_basename_exn t suffix
+;;
