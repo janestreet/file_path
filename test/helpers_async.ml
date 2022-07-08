@@ -43,14 +43,11 @@ let escape string =
 
 let unescape string =
   match
-    List.fold
-      (String.to_list string)
-      ~init:(`Normal, [])
-      ~f:(fun (mode, acc) char ->
-        match mode, char with
-        | `Normal, '\\' -> `Backslash, acc
-        | `Normal, char -> `Normal, char :: acc
-        | `Backslash, char -> `Normal, char :: acc)
+    List.fold (String.to_list string) ~init:(`Normal, []) ~f:(fun (mode, acc) char ->
+      match mode, char with
+      | `Normal, '\\' -> `Backslash, acc
+      | `Normal, char -> `Normal, char :: acc
+      | `Backslash, char -> `Normal, char :: acc)
   with
   | `Normal, acc -> Ok (String.of_char_list (List.rev acc))
   | `Backslash, _ -> error_s [%sexp "unterminated backslash escape"]
