@@ -1,13 +1,15 @@
 open! Core
 open! Async
-open! Expect_test_helpers_core
-open! Expect_test_helpers_async
+open Expect_test_helpers_core
+open Expect_test_helpers_async
+open File_path.Operators
 
 module type IO = sig
   include File_path_io.S
+  include Monad.S with type 'a t := 'a io
 
-  (** Convert I/O results to a deferred. *)
-  val async : 'a io -> 'a Deferred.t
+  (** Convert I/O computations to a deferred. *)
+  val async : (unit -> 'a io) -> 'a Deferred.t
 end
 
 module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io = struct
@@ -23,6 +25,18 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
     return ()
   ;;
 
+  let default_temp_dir = IO.default_temp_dir
+
+  let%expect_test "[default_temp_dir]" =
+    require_equal
+      [%here]
+      (module String)
+      Filename.temp_dir_name
+      (File_path.to_string (force IO.default_temp_dir));
+    [%expect {| |}];
+    return ()
+  ;;
+
   let read_file = IO.read_file
   let write_file = IO.write_file
 
@@ -30,11 +44,86 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
     within_temp_dir (fun () ->
       let path = File_path.of_string "file.txt" in
       let write_contents = "you do the hokey pokey and you turn yourself around" in
-      let%bind () = write_file path ~contents:write_contents |> IO.async in
-      let%bind read_contents = read_file path |> IO.async in
+      let%bind () = IO.async (fun () -> write_file path ~contents:write_contents) in
+      let%bind read_contents = IO.async (fun () -> read_file path) in
       require_equal [%here] (module String) write_contents read_contents;
       [%expect {| |}];
       return ())
+  ;;
+
+  open struct
+    (* helpers for testing write atomicity *)
+
+    let test_atomic_write_once ~size ~iteration =
+      let path = File_path.of_string (sprintf "file.%d.%d.txt" size iteration) in
+      let check_atomic =
+        Deferred.repeat_until_finished () (fun () ->
+          (* stat the file until it exists *)
+          match%map
+            Monitor.try_with ~extract_exn:true (fun () ->
+              Unix.stat (File_path.to_string path))
+          with
+          (* if it exists, check its length *)
+          | Ok stat ->
+            if Int64.equal stat.size (Int64.of_int size)
+            then (* full size? write appears to be atomic *)
+              `Finished (Ok ())
+            else
+              (* partial size? write is not atomic *)
+              `Finished
+                (Or_error.error_s
+                   [%message
+                     "write was not atomic"
+                       ~expect_size:(size : int)
+                       ~actual_size:(stat.size : int64)])
+          (* doesn't exist yet? retry *)
+          | Error (Unix.Unix_error (ENOENT, _, _)) -> `Repeat ()
+          (* fail on any other kind of error *)
+          | Error exn ->
+            `Finished (Or_error.error_s [%message "unexpected exception" (exn : exn)]))
+      in
+      let write_file =
+        (* write to the file concurrently with checking atomicity *)
+        IO.async (fun () -> write_file path ~contents:(String.make size '.'))
+      in
+      let%map result = check_atomic
+      and () = write_file in
+      result
+    ;;
+  end
+
+  let%expect_test "[write_file] atomically" =
+    (* try writing files of size 1024 through 1048576 until we hit a failure *)
+    let min_size_pow2 = 10 in
+    let max_size_pow2 = 20 in
+    (* try each size ten times *)
+    let max_iteration = 10 in
+    (* this gives us around a hundred chances to fail, since failure (if present) is
+       nondeterministic *)
+    let%bind () =
+      within_temp_dir (fun () ->
+        Deferred.repeat_until_finished min_size_pow2 (fun size_pow2 ->
+          let%map result =
+            Deferred.repeat_until_finished 1 (fun iteration ->
+              let%map result =
+                let size = 1 lsl size_pow2 in
+                test_atomic_write_once ~size ~iteration
+              in
+              (* repeat until failure or done with the current size *)
+              match result with
+              | Ok () when iteration < max_iteration -> `Repeat (iteration + 1)
+              | result -> `Finished result)
+          in
+          (* repeat until failure or done with all sizes *)
+          match result with
+          | Ok () when size_pow2 < max_size_pow2 -> `Repeat (size_pow2 + 1)
+          | result ->
+            (* when finished, check for success *)
+            require_ok [%here] result;
+            `Finished ()))
+    in
+    [%expect {| |}];
+    return ()
   ;;
 
   open struct
@@ -43,10 +132,10 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
     let test_load_save m original ~load ~save =
       within_temp_dir (fun () ->
         let path = File_path.of_string "data.sexp" in
-        let%bind () = save path original |> IO.async in
-        let%bind contents = read_file path |> IO.async in
+        let%bind () = IO.async (fun () -> save path original) in
+        let%bind contents = IO.async (fun () -> read_file path) in
         print_string contents;
-        let%bind round_trip = load path |> IO.async in
+        let%bind round_trip = IO.async (fun () -> load path) in
         require_equal [%here] m original round_trip;
         return ())
     ;;
@@ -182,9 +271,9 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
     end
     in
     let test path =
-      let%bind exists_exn = exists_exn path |> IO.async in
-      let%bind is_file_exn = is_file_exn path |> IO.async in
-      let%bind is_directory_exn = is_directory_exn path |> IO.async in
+      let%bind exists_exn = IO.async (fun () -> exists_exn path) in
+      let%bind is_file_exn = IO.async (fun () -> is_file_exn path) in
+      let%bind is_directory_exn = IO.async (fun () -> is_directory_exn path) in
       print_s
         [%sexp
           { path : File_path.t
@@ -192,9 +281,9 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
           ; is_file_exn : bool
           ; is_directory_exn : bool
           }];
-      let%bind exists = exists path |> IO.async in
-      let%bind is_file = is_file path |> IO.async in
-      let%bind is_directory = is_directory path |> IO.async in
+      let%bind exists = IO.async (fun () -> exists path) in
+      let%bind is_file = IO.async (fun () -> is_file path) in
+      let%bind is_directory = IO.async (fun () -> is_directory path) in
       require_equal [%here] (module M) exists (if exists_exn then `Yes else `No);
       require_equal [%here] (module M) is_file (if is_file_exn then `Yes else `No);
       require_equal
@@ -266,7 +355,7 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
         ./
         ../
         my-file |}];
-      let%bind () = unlink path |> IO.async in
+      let%bind () = IO.async (fun () -> unlink path) in
       let%bind () = run "ls" [ "-aF" ] in
       [%expect {|
         ./
@@ -286,7 +375,7 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
         ./
         ../
         source |}];
-      let%bind () = rename ~src ~dst |> IO.async in
+      let%bind () = IO.async (fun () -> rename ~src ~dst) in
       let%bind () = run "ls" [ "-aF" ] in
       [%expect {|
         ./
@@ -305,13 +394,13 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
       [%expect {|
         ./
         ../ |}];
-      let%bind () = mkdir path |> IO.async in
+      let%bind () = IO.async (fun () -> mkdir path) in
       let%bind () = run "ls" [ "-aF" ] in
       [%expect {|
         ./
         ../
         etc/ |}];
-      let%bind () = rmdir path |> IO.async in
+      let%bind () = IO.async (fun () -> rmdir path) in
       let%bind () = run "ls" [ "-aF" ] in
       [%expect {|
         ./
@@ -326,9 +415,9 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
     within_temp_dir (fun () ->
       let subdir = File_path.Relative.of_string "subdir" in
       let%bind () = Unix.mkdir (subdir :> string) in
-      let%bind tmp = getcwd () |> IO.async in
-      let%bind () = chdir (File_path.of_relative subdir) |> IO.async in
-      let%bind tmp_slash_subdir = getcwd () |> IO.async in
+      let%bind tmp = IO.async (fun () -> getcwd ()) in
+      let%bind () = IO.async (fun () -> chdir (File_path.of_relative subdir)) in
+      let%bind tmp_slash_subdir = IO.async (fun () -> getcwd ()) in
       require_equal
         [%here]
         (module File_path.Absolute)
@@ -345,7 +434,7 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
       let%bind () = run "touch" [ tmp ^/ "regular-file" ] in
       let%bind () = run "mkdir" [ tmp ^/ "subdirectory" ] in
       let%bind () = run "touch" [ tmp ^/ "subdirectory/another-file" ] in
-      let%bind ls = ls_dir (File_path.of_string tmp) |> IO.async in
+      let%bind ls = IO.async (fun () -> ls_dir (File_path.of_string tmp)) in
       print_s [%sexp (ls : File_path.Part.t list)];
       [%expect {| (regular-file subdirectory) |}];
       return ())
@@ -358,7 +447,7 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
       let%bind tmp = Sys.getcwd () in
       let test string =
         let path = File_path.of_string string in
-        let%bind abspath = make_absolute_under_cwd path |> IO.async in
+        let%bind abspath = IO.async (fun () -> make_absolute_under_cwd path) in
         File_path.Absolute.to_string abspath
         |> replace ~pattern:tmp ~with_:"$TMP"
         |> print_endline;
@@ -379,13 +468,13 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
     within_temp_dir (fun () ->
       let test string =
         let path = File_path.of_string string in
-        let%bind relative_to_cwd = make_relative_to_cwd path |> IO.async in
+        let%bind relative_to_cwd = IO.async (fun () -> make_relative_to_cwd path) in
         let%bind relative_to_cwd_exn =
           Deferred.Or_error.try_with (fun () ->
-            make_relative_to_cwd_exn path |> IO.async)
+            IO.async (fun () -> make_relative_to_cwd_exn path))
         in
         let%bind relative_to_cwd_if_possible =
-          make_relative_to_cwd_if_possible path |> IO.async
+          IO.async (fun () -> make_relative_to_cwd_if_possible path)
         in
         print_s [%sexp (relative_to_cwd_if_possible : File_path.t)];
         require_equal
@@ -435,27 +524,29 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
       let fns =
         (* all the [realpath*] functions, called with both abspaths and relpaths *)
         let realpath_absolute_of_abspath string =
-          realpath_absolute (abspath string) |> IO.async
+          IO.async (fun () -> realpath_absolute (abspath string))
         in
         let realpath_of_abspath string =
-          realpath
-            (abspath string :> File_path.t)
-            ~relative_to:(File_path.Absolute.of_string irrelevant_dir)
-          |> IO.async
+          IO.async (fun () ->
+            realpath
+              (abspath string :> File_path.t)
+              ~relative_to:(File_path.Absolute.of_string irrelevant_dir))
         in
         let realpath_of_relpath string =
-          realpath
-            (relpath string :> File_path.t)
-            ~relative_to:(File_path.Absolute.of_string tmp)
-          |> IO.async
+          IO.async (fun () ->
+            realpath
+              (relpath string :> File_path.t)
+              ~relative_to:(File_path.Absolute.of_string tmp))
         in
         let realpath_relative_to_cwd_of_abspath string =
           in_dir irrelevant_dir (fun () ->
-            realpath_relative_to_cwd (abspath string :> File_path.t) |> IO.async)
+            IO.async (fun () ->
+              realpath_relative_to_cwd (abspath string :> File_path.t)))
         in
         let realpath_relative_to_cwd_of_relpath string =
           in_dir tmp (fun () ->
-            realpath_relative_to_cwd (relpath string :> File_path.t) |> IO.async)
+            IO.async (fun () ->
+              realpath_relative_to_cwd (relpath string :> File_path.t)))
         in
         [ realpath_absolute_of_abspath
         ; realpath_of_abspath
@@ -513,6 +604,155 @@ module Test_file_path_io (IO : IO) : File_path_io.S with type 'a io := 'a IO.io 
       [%expect {| (Ok $TMP/a) |}];
       return ())
   ;;
+
+  open struct
+    (* helpers for temp file tests *)
+
+    (* Supply optional arguments to a temp file creating function. *)
+    let wrap f ~in_dir ~prefix ~suffix arg =
+      f
+        ?in_dir:(Some (File_path.of_absolute in_dir))
+        ?prefix:(Some prefix)
+        ?suffix:(Some suffix)
+        arg
+    ;;
+
+    (* Check a temporary file or directory after creation. *)
+    let check path ~in_dir ~prefix ~suffix ~expect_directory =
+      let exists = Sys_unix.file_exists_exn (File_path.Absolute.to_string path) in
+      require [%here] exists;
+      let is_directory = Sys_unix.is_directory_exn (File_path.Absolute.to_string path) in
+      require_equal [%here] (module Bool) is_directory expect_directory;
+      require_equal
+        [%here]
+        (module File_path.Absolute)
+        (File_path.Absolute.dirname_exn path)
+        in_dir;
+      let name = File_path.Part.to_string (File_path.Absolute.basename_exn path) in
+      require [%here] (String.is_prefix name ~prefix);
+      require [%here] (String.is_suffix name ~suffix)
+    ;;
+
+    (* Test a temp file creating function. *)
+    let test f ~expect_directory =
+      let f = wrap f in
+      with_temp_dir (fun in_dir ->
+        let in_dir = File_path.Absolute.of_string in_dir in
+        let prefix = "the_prefix" in
+        let suffix = "the_suffix" in
+        (* create and check two files... *)
+        let%bind path1 = IO.async (fun () -> f ~in_dir ~prefix ~suffix ()) in
+        check path1 ~in_dir ~prefix ~suffix ~expect_directory;
+        let%bind path2 = IO.async (fun () -> f ~in_dir ~prefix ~suffix ()) in
+        check path2 ~in_dir ~prefix ~suffix ~expect_directory;
+        (* ...and make sure they are unique. *)
+        require
+          [%here]
+          (not (File_path.Absolute.equal path1 path2))
+          ~if_false_then_print_s:
+            (lazy
+              [%message
+                "temp files not unique"
+                  (path1 : File_path.Absolute.t)
+                  (path2 : File_path.Absolute.t)]);
+        return ())
+    ;;
+
+    let modify path ~remove =
+      (* Act on the temp file to make sure it gets cleaned up properly regardless of
+         usage, allowing coverage for both keeping and deleting the file. *)
+      let open IO.Let_syntax in
+      let path = File_path.of_absolute path in
+      let%bind is_dir = is_directory_exn path in
+      match remove, is_dir with
+      | false, false -> write_file path ~contents:"modified"
+      | false, true -> write_file (path /?. ~."temp-file") ~contents:"added"
+      | true, false -> unlink path
+      | true, true -> rmdir path
+    ;;
+
+    (* Test a [with] function for temporary files. *)
+    let test_with f ~expect_directory ~remove =
+      let f = wrap f in
+      (* Create an outer temporary directory using expect test helpers. *)
+      with_temp_dir (fun in_dir ->
+        let in_dir = File_path.Absolute.of_string in_dir in
+        let prefix = "the_prefix" in
+        let suffix = "the_suffix" in
+        let%bind path =
+          let open IO.Let_syntax in
+          IO.async (fun () ->
+            f ~in_dir ~prefix ~suffix (fun temp ->
+              (* Check, then modify, the temporary file. *)
+              check temp ~in_dir ~prefix ~suffix ~expect_directory;
+              let%map () = modify temp ~remove in
+              temp))
+        in
+        (* Make sure the temporary file gets cleaned up. *)
+        require
+          [%here]
+          (not (Sys_unix.file_exists_exn (File_path.Absolute.to_string path)));
+        return ())
+    ;;
+  end
+
+  let create_temp_file = IO.create_temp_file
+
+  let%expect_test "[create_temp_file]" =
+    let%bind () = test create_temp_file ~expect_directory:false in
+    [%expect {| |}];
+    return ()
+  ;;
+
+  let create_temp_dir = IO.create_temp_dir
+
+  let%expect_test "[create_temp_dir]" =
+    let%bind () = test create_temp_dir ~expect_directory:true in
+    [%expect {| |}];
+    return ()
+  ;;
+
+  let with_temp_file = IO.with_temp_file
+
+  let%expect_test "[with_temp_file]" =
+    let%bind () = test_with with_temp_file ~expect_directory:false ~remove:false in
+    [%expect {| |}];
+    let%bind () = test_with with_temp_file ~expect_directory:false ~remove:true in
+    [%expect {| |}];
+    return ()
+  ;;
+
+  let with_temp_dir = IO.with_temp_dir
+
+  let%expect_test "[with_temp_dir]" =
+    let%bind () = test_with with_temp_dir ~expect_directory:true ~remove:false in
+    [%expect {| |}];
+    let%bind () = test_with with_temp_dir ~expect_directory:true ~remove:true in
+    [%expect {| |}];
+    return ()
+  ;;
+
+  let within_temp_dir = IO.within_temp_dir
+
+  let%expect_test "[within_temp_dir]" =
+    let test ~remove =
+      test_with ~expect_directory:true ~remove (fun ?in_dir ?prefix ?suffix f ->
+        let open IO.Let_syntax in
+        let above = Sys_unix.getcwd () in
+        let%map result =
+          within_temp_dir ?in_dir ?prefix ?suffix (fun () ->
+            f (File_path.Absolute.of_string (Sys_unix.getcwd ())))
+        in
+        let below = Sys_unix.getcwd () in
+        require_equal [%here] (module String) above below;
+        result)
+    in
+    let%bind () = test ~remove:false in
+    [%expect {| |}];
+    let%bind () = test ~remove:true in
+    [%expect {| |}];
+    return ()
+  ;;
 end
 
 module Test_file_path_core = Test_file_path_io (struct
@@ -520,7 +760,9 @@ module Test_file_path_core = Test_file_path_io (struct
 
     type 'a io = 'a
 
-    let async io = Deferred.return io
+    include (Monad.Ident : Monad.S with type 'a t := 'a io)
+
+    let async f = In_thread.run f
   end)
 
 module Test_file_path_async = Test_file_path_io (struct
@@ -528,5 +770,7 @@ module Test_file_path_async = Test_file_path_io (struct
 
     type 'a io = 'a Deferred.t
 
-    let async io = io
+    include (Deferred : Monad.S with type 'a t := 'a io)
+
+    let async f = f ()
   end)

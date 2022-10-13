@@ -1,4 +1,5 @@
 open! Core
+open Stable_witness.Export
 include Common_intf
 
 module Make (T : Types.Type) (Basis : Basis) = struct
@@ -55,6 +56,12 @@ module Make (T : Types.Type) (Basis : Basis) = struct
           let of_string = of_string
           let to_string = to_string
         end)
+
+      (* Path types are serialized using [of_string/to_string], and derive their stability
+         from the fact that string is a primitive type. *)
+      let stable_witness =
+        Stable_witness.of_serializable [%stable_witness: string] of_string to_string
+      ;;
 
       include Identifiable.Make_using_comparator (struct
           type nonrec t = t [@@deriving bin_io, compare, hash, sexp]

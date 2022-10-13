@@ -3,7 +3,7 @@ open! Core
 module Part = struct
   module V1 = struct
     type t = File_path.Stable.Part.V1.t
-    [@@deriving bin_io, compare, hash, sexp, sexp_grammar, equal]
+    [@@deriving bin_io, compare, equal, hash, sexp, sexp_grammar, stable_witness]
 
     type comparator_witness = File_path.Stable.Part.V1.comparator_witness
 
@@ -84,7 +84,7 @@ end
 module Relative = struct
   module V1 = struct
     type t = File_path.Stable.Relative.V1.t
-    [@@deriving bin_io, compare, equal, hash, sexp, sexp_grammar]
+    [@@deriving bin_io, compare, equal, hash, sexp, sexp_grammar, stable_witness]
 
     type comparator_witness = File_path.Stable.Relative.V1.comparator_witness
 
@@ -190,7 +190,7 @@ end
 module Absolute = struct
   module V1 = struct
     type t = File_path.Stable.Absolute.V1.t
-    [@@deriving bin_io, compare, equal, hash, sexp, sexp_grammar]
+    [@@deriving bin_io, compare, equal, hash, sexp, sexp_grammar, stable_witness]
 
     type comparator_witness = File_path.Stable.Absolute.V1.comparator_witness
 
@@ -300,7 +300,7 @@ end
 
 module V1 = struct
   type t = File_path.Stable.V1.t
-  [@@deriving bin_io, compare, equal, hash, sexp, sexp_grammar]
+  [@@deriving bin_io, compare, equal, hash, sexp, sexp_grammar, stable_witness]
 
   type comparator_witness = File_path.Stable.V1.comparator_witness
 

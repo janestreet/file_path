@@ -76,6 +76,70 @@ module type S = sig
 
   (** Like [make_relative_to_cwd]. Returns the original path instead of [None]. *)
   val make_relative_to_cwd_if_possible : File_path.t -> File_path.t io
+
+  (** {2 Temporary Files and Directories} *)
+
+  (** The system-determined default temporary directory.
+
+      Has the same value as {!Core.Filename.temp_dir_name}. OCaml semantics do not
+      guarantee an absolute path here. *)
+  val default_temp_dir : File_path.t Lazy.t
+
+  (** Creates a new directory with a unique name, [chdir]s to it, runs the given function,
+      [chdir]s back, and then recursively deletes the temporary directory and its
+      contents.
+
+      If the directory is renamed or removed before the function ends, there is a race
+      condition. Some other function or process may create a temporary directory or file
+      by the same name, and this function may attempt to delete that. *)
+  val within_temp_dir
+    :  ?in_dir:File_path.t (** default [force default_temp_dir] *)
+    -> ?prefix:string (** default [""] *)
+    -> ?suffix:string (** default [""] *)
+    -> (unit -> 'a io)
+    -> 'a io
+
+  (** Creates a new directory with a unique name, runs the given function with the
+      directory's path, and then recursively deletes the temporary directory and its
+      contents.
+
+      Has the same race condition as [within_temp_dir] if the path is renamed or removed
+      before the function finishes. *)
+  val with_temp_dir
+    :  ?in_dir:File_path.t (** default [force default_temp_dir] *)
+    -> ?prefix:string (** default [""] *)
+    -> ?suffix:string (** default [""] *)
+    -> (File_path.Absolute.t -> 'a io)
+    -> 'a io
+
+  (** Creates a new file with a unique name, runs the given function with the file's path,
+      and then deletes the temporary file.
+
+      Has the same race condition as [within_temp_dir] if the path is renamed or removed
+      before the function finishes. Overwriting the file atomically by renaming something
+      else to it should not have the same race condition. *)
+  val with_temp_file
+    :  ?in_dir:File_path.t (** default [force default_temp_dir] *)
+    -> ?prefix:string (** default [""] *)
+    -> ?suffix:string (** default [""] *)
+    -> (File_path.Absolute.t -> 'a io)
+    -> 'a io
+
+  (** Creates a new directory with a unique name. *)
+  val create_temp_dir
+    :  ?in_dir:File_path.t (** default [force default_temp_dir] *)
+    -> ?prefix:string (** default [""] *)
+    -> ?suffix:string (** default [""] *)
+    -> unit
+    -> File_path.Absolute.t io
+
+  (** Creates a new, empty file with a unique name. *)
+  val create_temp_file
+    :  ?in_dir:File_path.t (** default [force default_temp_dir] *)
+    -> ?prefix:string (** default [""] *)
+    -> ?suffix:string (** default [""] *)
+    -> unit
+    -> File_path.Absolute.t io
 end
 
 module type File_path_io = sig
