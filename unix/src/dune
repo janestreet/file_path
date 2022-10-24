@@ -1,4 +1,0 @@
-(library (name file_path_unix) (public_name file_path.file_path_unix)
- (libraries core core_unix core_unix.filename_unix file_path file_path_io
-  core_unix.sys_unix)
- (preprocess (pps ppx_jane)))

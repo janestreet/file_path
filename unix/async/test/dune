@@ -1,4 +1,0 @@
-(library (name file_path_unix_async_test)
- (public_name file_path.file_path_unix_async_test)
- (libraries file_path_unix_async file_path_io_test)
- (preprocess (pps ppx_jane)))
