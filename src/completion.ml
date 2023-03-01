@@ -24,13 +24,13 @@ module Sys = struct
 
   let readdir path =
     let path = rooted path in
-    try Caml.Sys.readdir path with
+    try Stdlib.Sys.readdir path with
     | (_ : exn) -> [||]
   ;;
 
   let is_directory path =
     let path = rooted path in
-    try Caml.Sys.is_directory path with
+    try Stdlib.Sys.is_directory path with
     | (_ : exn) -> false
   ;;
 end

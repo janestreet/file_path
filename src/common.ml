@@ -72,6 +72,10 @@ module Make (T : Types.Type) (Basis : Basis) = struct
           let comparator = comparator
           let module_name = Basis.module_name
         end)
+
+      (* Include [T] again to make sure we export the fast versions of any underlying
+         operations. *)
+      include T
     end
   end
 
@@ -82,6 +86,6 @@ module Make (T : Types.Type) (Basis : Basis) = struct
       try Basis.autocomplete part with
       | (_ : exn)
         (* don't mask exceptions during inline tests *)
-        when not am_running_inline_test -> [])
+        when not Ppx_inline_test_lib.am_running -> [])
   ;;
 end

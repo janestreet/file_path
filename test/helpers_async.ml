@@ -5,7 +5,7 @@ open! Expect_test_helpers_async
 include Helpers_async_intf
 
 let populate paths =
-  Deferred.List.iter paths ~f:(fun path ->
+  Deferred.List.iter ~how:`Sequential paths ~f:(fun path ->
     if String.is_suffix path ~suffix:"/"
     then run "mkdir" [ "-p"; path ]
     else (
@@ -13,8 +13,8 @@ let populate paths =
       run "touch" [ path ]))
 ;;
 
-let compare_by_number_of_slashes =
-  Comparable.lift Int.compare ~f:(String.count ~f:(Char.equal '/'))
+let compare_by_number_of_slashes a b =
+  Comparable.lift Int.compare ~f:(String.count ~f:(Char.equal '/')) a b
 ;;
 
 let apply_if_changed f x =

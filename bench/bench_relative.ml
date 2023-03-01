@@ -14,6 +14,18 @@ include (
   with type t := t
    and type comparator_witness = File_path.Relative.comparator_witness)
 
+let%bench_fun "equal =" =
+  let x = Sys.opaque_identity (of_string "foo/bar/baz") in
+  let y = Sys.opaque_identity (of_string "foo/bar/baz") in
+  fun () -> equal x y
+;;
+
+let%bench_fun "equal <>" =
+  let x = Sys.opaque_identity dot in
+  let y = Sys.opaque_identity (of_string "foo/bar/baz") in
+  fun () -> equal x y
+;;
+
 let%bench_fun "compare =" =
   let x = Sys.opaque_identity dot in
   let y = Sys.opaque_identity dot in
