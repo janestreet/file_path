@@ -187,8 +187,7 @@ module Bash_action = struct
     List.find escaped_inputs ~f:(fun escaped_input ->
       match unescape escaped_input with
       | Error _ -> false
-      | Ok input ->
-        not (String.is_prefix output ~prefix:(remove_duplicate_slashes input)))
+      | Ok input -> not (String.is_prefix output ~prefix:(remove_duplicate_slashes input)))
     |> Option.iter ~f:(fun input ->
       print_cr [%here] [%sexp "completion changed the input", (input : string)])
   ;;
@@ -207,7 +206,8 @@ module Bash_action = struct
          print_cr [%here] [%sexp "invalid escape or quotation", (error : Error.t)]
        | Ok unescaped ->
          (match validate path_m (tilde_to_home unescaped) with
-          | Error error -> print_cr [%here] [%sexp "invalid completion", (error : Error.t)]
+          | Error error ->
+            print_cr [%here] [%sexp "invalid completion", (error : Error.t)]
           | Ok () -> check_completion_extends_input ~escaped_inputs:args ~output:unescaped))
   ;;
 end

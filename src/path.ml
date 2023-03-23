@@ -70,8 +70,7 @@ let basename_exn t =
     ~if_none:(function
       | "/" -> raise_s [%sexp "File_path.basename_exn: root path"]
       | string ->
-        raise_s
-          [%sexp "File_path.basename_exn: path contains no slash", (string : string)])
+        raise_s [%sexp "File_path.basename_exn: path contains no slash", (string : string)])
 ;;
 
 let basename_or_error t =
