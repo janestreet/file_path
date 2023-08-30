@@ -189,7 +189,7 @@ module Bash_action = struct
       | Error _ -> false
       | Ok input -> not (String.is_prefix output ~prefix:(remove_duplicate_slashes input)))
     |> Option.iter ~f:(fun input ->
-      print_cr [%here] [%sexp "completion changed the input", (input : string)])
+         print_cr [%here] [%sexp "completion changed the input", (input : string)])
   ;;
 
   let check path_m action ~args =
@@ -243,15 +243,15 @@ let complete_paths path_m param paths ~tmp ~expect_output =
   |> List.map ~f:(fun arg -> complete_arg param arg ~tmp ~expect_output, arg)
   |> List.Assoc.group ~equal:Bash_action.equal
   |> List.iter ~f:(fun (action, args) ->
-    if should_print path_m args action
-    then (
-      print_newline ();
-      args
-      |> List.map ~f:(sprintf "%S") (* quote as in [Bash_action.to_string_hum] *)
-      |> with_ellipsis ~ellipsis:"..."
-      |> List.iter ~f:print_endline;
-      print_endline (Bash_action.to_string_hum action));
-    Bash_action.check path_m action ~args)
+       if should_print path_m args action
+       then (
+         print_newline ();
+         args
+         |> List.map ~f:(sprintf "%S") (* quote as in [Bash_action.to_string_hum] *)
+         |> with_ellipsis ~ellipsis:"..."
+         |> List.iter ~f:print_endline;
+         print_endline (Bash_action.to_string_hum action));
+       Bash_action.check path_m action ~args)
 ;;
 
 let paths =

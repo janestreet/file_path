@@ -28,8 +28,8 @@ let dot_dot = File_path.dot_dot
 include (
   File_path :
     Identifiable.S
-  with type t := t
-   and type comparator_witness = File_path.comparator_witness)
+      with type t := t
+       and type comparator_witness = File_path.comparator_witness)
 
 let%bench_fun "equal =" =
   let x = Sys.opaque_identity (of_string "foo/bar/baz") in
@@ -724,7 +724,7 @@ let%bench_fun "of_parts_relative_nonempty" =
        ; File_path.Part.of_string "bar"
        ; File_path.Part.of_string "baz"
        ]
-       : _ Nonempty_list.t)
+        : _ Nonempty_list.t)
   in
   fun () -> of_parts_relative_nonempty parts
 ;;

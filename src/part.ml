@@ -38,7 +38,7 @@ let append_to_basename_exn path suffix =
       raise_s
         [%sexp
           "File_path.Part.append_to_basename_exn: suffix contains invalid characters"
-        , { path : string; suffix : string }])
+          , { path : string; suffix : string }])
 ;;
 
 include

@@ -31,8 +31,8 @@ module type Version = sig
 
   include
     Comparable.Stable.V1.S
-    with type comparable := t
-     and type comparator_witness := comparator_witness
+      with type comparable := t
+       and type comparator_witness := comparator_witness
 end
 
 module type Helpers = sig
@@ -96,7 +96,7 @@ module type Helpers = sig
       of bin-shape digests. *)
   val test_stable_version
     :  ?bin_shape_universe:Bin_shape_universe.t
-    (** defaults to [force Bin_shape_universe.default] *)
+         (** defaults to [force Bin_shape_universe.default] *)
     -> Source_code_position.t
     -> (module Version with type t = 'a)
     -> 'a list
@@ -106,7 +106,7 @@ module type Helpers = sig
       of bin-shape digests (instantiated at [int] for polymorphic types). *)
   val test_stable_containers
     :  ?bin_shape_universe:Bin_shape_universe.t
-    (** defaults to [force Bin_shape_universe.default] *)
+         (** defaults to [force Bin_shape_universe.default] *)
     -> Source_code_position.t
     -> (module Version with type t = 'a)
     -> 'a list

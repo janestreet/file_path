@@ -15,15 +15,15 @@ module Make (T : Types.Type) (Basis : Basis) = struct
         raise_s
           [%sexp
             (Printf.sprintf "%s.%s: invalid string" Basis.module_name name : string)
-          , (string : string)]
+            , (string : string)]
       ;;
 
       let[@cold] raise_non_canonical ~name string =
         raise_s
           [%sexp
             (Printf.sprintf "%s.%s: non-canonical representation" Basis.module_name name
-             : string)
-          , (string : string)]
+              : string)
+            , (string : string)]
       ;;
 
       let of_string string =
@@ -43,19 +43,19 @@ module Make (T : Types.Type) (Basis : Basis) = struct
       ;;
 
       include Binable.Of_stringable_with_uuid (struct
-          type nonrec t = t
+        type nonrec t = t
 
-          let of_string = of_string
-          let to_string = to_string
-          let caller_identity = Basis.caller_identity
-        end)
+        let of_string = of_string
+        let to_string = to_string
+        let caller_identity = Basis.caller_identity
+      end)
 
       include Sexpable.Of_stringable (struct
-          type nonrec t = t
+        type nonrec t = t
 
-          let of_string = of_string
-          let to_string = to_string
-        end)
+        let of_string = of_string
+        let to_string = to_string
+      end)
 
       (* Path types are serialized using [of_string/to_string], and derive their stability
          from the fact that string is a primitive type. *)
@@ -64,14 +64,14 @@ module Make (T : Types.Type) (Basis : Basis) = struct
       ;;
 
       include Identifiable.Make_using_comparator (struct
-          type nonrec t = t [@@deriving bin_io, compare, hash, sexp]
-          type nonrec comparator_witness = comparator_witness
+        type nonrec t = t [@@deriving bin_io, compare, hash, sexp]
+        type nonrec comparator_witness = comparator_witness
 
-          let of_string = of_string
-          let to_string = to_string
-          let comparator = comparator
-          let module_name = Basis.module_name
-        end)
+        let of_string = of_string
+        let to_string = to_string
+        let comparator = comparator
+        let module_name = Basis.module_name
+      end)
 
       (* Include [T] again to make sure we export the fast versions of any underlying
          operations. *)
@@ -85,7 +85,7 @@ module Make (T : Types.Type) (Basis : Basis) = struct
     Command.Arg_type.create of_string ~complete:(fun (_ : Univ_map.t) ~part ->
       try Basis.autocomplete part with
       | (_ : exn)
-        (* don't mask exceptions during inline tests *)
+      (* don't mask exceptions during inline tests *)
         when not Ppx_inline_test_lib.am_running -> [])
   ;;
 end

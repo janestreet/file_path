@@ -91,7 +91,6 @@ module Escaping = struct
   (* bash's tab-completion behaves oddly with escaping via quotes, so we only bother to
      escape and unescape via backslashes. *)
 
-
   let rec unescape_chars_loop chars ~acc =
     match chars with
     | [] -> acc
@@ -236,7 +235,7 @@ let translate original =
   let unescaped = Escaping.unescape_permissive original in
   match Sys.getenv "HOME" with
   | Some home
-    (* only treat unescaped [~] as meaning [$HOME] *)
+  (* only treat unescaped [~] as meaning [$HOME] *)
     when String.is_prefix original ~prefix:"~" ->
     if String.equal unescaped "~"
     then Some home, home

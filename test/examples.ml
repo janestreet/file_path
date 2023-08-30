@@ -161,7 +161,7 @@ module Relative = struct
   let strings_for_basename_and_dirname =
     [ "."; ".."; "singleton" ]
     @ List.map strings_for_append_part ~f:(fun (basename, dirname) ->
-      basename ^ "/" ^ dirname)
+        basename ^ "/" ^ dirname)
   ;;
 
   let strings_for_prepend_part =
@@ -231,7 +231,7 @@ module Relative = struct
     ]
     @ List.map [ "."; ".."; "a/b/c" ] ~f:(fun string -> { prefix = string; t = string })
     @ List.map strings_for_append ~f:(fun (prefix, suffix) ->
-      { prefix; t = prefix ^ "/" ^ suffix })
+        { prefix; t = prefix ^ "/" ^ suffix })
   ;;
 
   let strings_for_chop_suffix =
@@ -243,9 +243,9 @@ module Relative = struct
     ; { suffix = File_path.Relative.of_string "a/b/c"; t = "b/c" }
     ]
     @ List.map [ "."; ".."; "a/b/c" ] ~f:(fun string ->
-      { suffix = File_path.Relative.of_string string; t = string })
+        { suffix = File_path.Relative.of_string string; t = string })
     @ List.map strings_for_append ~f:(fun (prefix, suffix) ->
-      { suffix = File_path.Relative.of_string suffix; t = prefix ^ "/" ^ suffix })
+        { suffix = File_path.Relative.of_string suffix; t = prefix ^ "/" ^ suffix })
   ;;
 
   let for_conversion = strings_for_conversion |> List.map ~f:of_string
@@ -325,7 +325,7 @@ module Absolute = struct
   let strings_for_chop_suffix =
     [ With_suffix.create "/" ~suffix:File_path.Relative.dot ]
     @ List.map Relative.strings_for_chop_suffix ~f:(fun with_suffix ->
-      { with_suffix with t = make_absolute with_suffix.t })
+        { with_suffix with t = make_absolute with_suffix.t })
   ;;
 
   let strings_for_simplify =
@@ -404,7 +404,7 @@ module Path = struct
     List.map Absolute.strings_for_append ~f:(fun (prefix, suffix) -> suffix, prefix)
     @ [ "/", "/." ]
     @ List.map Absolute.strings_for_append ~f:(fun (prefix, suffix) ->
-      Absolute.make_absolute suffix, prefix)
+        Absolute.make_absolute suffix, prefix)
   ;;
 
   let strings_for_make_relative =

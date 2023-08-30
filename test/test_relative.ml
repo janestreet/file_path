@@ -18,8 +18,8 @@ let%expect_test _ =
 include (
   File_path.Relative :
     Identifiable.S
-  with type t := t
-   and type comparator_witness = File_path.Relative.comparator_witness)
+      with type t := t
+       and type comparator_witness = File_path.Relative.comparator_witness)
 
 let%expect_test _ =
   Helpers.test_compare (module File_path.Relative) Examples.Relative.for_compare;
@@ -675,7 +675,7 @@ let append_to_basename_exn = File_path.Relative.append_to_basename_exn
 let%expect_test _ =
   Helpers.test
     (fun (path, string) ->
-       Or_error.try_with (fun () -> append_to_basename_exn path string))
+      Or_error.try_with (fun () -> append_to_basename_exn path string))
     ~input:(module Helpers.Tuple2 (File_path.Relative) (String))
     ~output:(module Helpers.Or_error (File_path.Relative))
     ~examples:Examples.Relative.for_append_to_basename

@@ -115,7 +115,7 @@ let test_invariant (module Path_type : Path_type) strings =
              [%here]
              [%sexp
                "[invariant] and [of_string] are inconsistent"
-             , { string : string; t : Path_type.t; exn : exn }]
+               , { string : string; t : Path_type.t; exn : exn }]
          else
            (* non-canonical string, it's okay if [invariant] raised but [of_string]
               succeeds *)
@@ -131,11 +131,11 @@ let test_invariant (module Path_type : Path_type) strings =
 ;;
 
 let test_predicate
-      (type input)
-      ~input:(module Input : Type with type t = input)
-      ~examples
-      ~correctness
-      predicate
+  (type input)
+  ~input:(module Input : Type with type t = input)
+  ~examples
+  ~correctness
+  predicate
   =
   let success, failure = List.partition_tf examples ~f:predicate in
   print_s [%sexp { success : Input.t list; failure : Input.t list }];
@@ -152,12 +152,12 @@ let test_predicate
 ;;
 
 let test
-      (type input output)
-      ~input:(module Input : Type with type t = input)
-      ~output:(module Output : Type with type t = output)
-      ~examples
-      ~correctness
-      function_to_test
+  (type input output)
+  ~input:(module Input : Type with type t = input)
+  ~output:(module Output : Type with type t = output)
+  ~examples
+  ~correctness
+  function_to_test
   =
   assert (not (List.is_empty examples));
   let test ~verbose example =
@@ -195,10 +195,10 @@ module Bin_shape_universe = struct
           here
           [%sexp
             "duplicate bin_shape_digest"
-          , { name : (string option[@sexp.option])
-            ; bin_shape_digest : string
-            ; where : Source_code_position.t
-            }];
+            , { name : (string option[@sexp.option])
+              ; bin_shape_digest : string
+              ; where : Source_code_position.t
+              }];
         where)
   ;;
 
@@ -208,11 +208,11 @@ module Bin_shape_universe = struct
 end
 
 let test_stable_version
-      (type t)
-      ?(bin_shape_universe = force Bin_shape_universe.default)
-      here
-      (module Version : Version with type t = t)
-      list
+  (type t)
+  ?(bin_shape_universe = force Bin_shape_universe.default)
+  here
+  (module Version : Version with type t = t)
+  list
   =
   Bin_shape_universe.test_bin_shape
     bin_shape_universe
@@ -223,11 +223,11 @@ let test_stable_version
 ;;
 
 let test_stable_containers
-      (type t)
-      ?(bin_shape_universe = force Bin_shape_universe.default)
-      here
-      (module Version : Version with type t = t)
-      list
+  (type t)
+  ?(bin_shape_universe = force Bin_shape_universe.default)
+  here
+  (module Version : Version with type t = t)
+  list
   =
   Bin_shape_universe.test_container_bin_shape
     bin_shape_universe
