@@ -11,6 +11,7 @@ open! Core
     '~' means a relative path with no leading slash
     '!' means an absolute path with a leading slash
     '?' means a path that may be relative or absolute
+    '$' means a string
 
     '/' means a compound path that may contain slashes, or path concatenation with a slash
     '.' means a path part with no slashes
@@ -19,16 +20,36 @@ module type S = sig
   module Types : Types.S
   open Types
 
-  (** Prefix operators: [of_string] synonyms
+  (** Prefix operators: conversions
 
-      These use two characters indicating the type of path being constructed:
+      These use two characters indicating the type of path:
       1. absolute, relative, or either
-      2. compound or single-part *)
+      2. compound or single-part
+
+      If constructing a path, that is all.
+
+      If consuming a path, they use a third character indicating the return type. *)
+
+  (** [of_string] synonyms: just indicate the path type being constructed *)
 
   val ( ~/ ) : string -> Relative.t
   val ( !/ ) : string -> Absolute.t
   val ( ?/ ) : string -> Path.t
   val ( ~. ) : string -> Part.t
+
+  (** [to_string] synonyms: end in '$' for a string return type *)
+
+  val ( ~/$ ) : Relative.t -> string
+  val ( !/$ ) : Absolute.t -> string
+  val ( ?/$ ) : Path.t -> string
+  val ( ~.$ ) : Part.t -> string
+
+  (** Up-conversions: end in '?' or '~' to indicate return type *)
+
+  val ( !/? ) : Absolute.t -> Path.t
+  val ( ~/? ) : Relative.t -> Path.t
+  val ( ~.? ) : Part.t -> Path.t
+  val ( ~.~ ) : Part.t -> Relative.t
 
   (** Infix operators: [append*] synonyms
 
