@@ -1,2 +1,6 @@
-(library (name file_path) (public_name file_path)
- (libraries core core_kernel.nonempty_list) (preprocess (pps ppx_jane)))
+(library
+ (name file_path)
+ (public_name file_path)
+ (libraries core core_kernel.nonempty_list)
+ (preprocess
+  (pps ppx_jane)))

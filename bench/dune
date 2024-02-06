@@ -1,2 +1,6 @@
-(library (name file_path_bench) (public_name file_path.file_path_bench)
- (libraries core file_path) (preprocess (pps ppx_jane)))
+(library
+ (name file_path_bench)
+ (public_name file_path.file_path_bench)
+ (libraries core file_path)
+ (preprocess
+  (pps ppx_jane)))

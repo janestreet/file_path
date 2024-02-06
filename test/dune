@@ -1,4 +1,7 @@
-(library (name file_path_test) (public_name file_path.file_path_test)
+(library
+ (name file_path_test)
+ (public_name file_path.file_path_test)
  (libraries async core_unix.command_test_helpers core
-  expect_test_helpers_async expect_test_helpers_core file_path)
- (preprocess (pps ppx_jane)))
+   expect_test_helpers_async expect_test_helpers_core file_path)
+ (preprocess
+  (pps ppx_jane)))
