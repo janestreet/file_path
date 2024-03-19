@@ -44,6 +44,7 @@ let%expect_test _ =
     ...
     "libmap.sex"
     "libmap.sexp"
-    Finish: "libmap.sexp" |}];
+    Finish: "libmap.sexp"
+    |}];
   return ()
 ;;

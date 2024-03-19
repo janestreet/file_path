@@ -488,6 +488,7 @@ let%expect_test _ =
     Extend: "~/t\\'ck/"
 
     "~/t\\'ck/"
-    Finish: "~/t\\'ck/" |}];
+    Finish: "~/t\\'ck/"
+    |}];
   return ()
 ;;

@@ -25,7 +25,8 @@ let%expect_test _ =
   [%expect {|
     /
     .
-    .. |}]
+    ..
+    |}]
 ;;
 
 include (
@@ -76,7 +77,8 @@ let%expect_test _ =
      bin.exe
      binary
      filename.txt
-     "\255\001") |}]
+     "\255\001")
+    |}]
 ;;
 
 let%expect_test _ =
@@ -123,7 +125,8 @@ let%expect_test _ =
     (~ /bin//exe//file /bin/exe/file)
     (~ /bin//exe//file/ /bin/exe/file)
     (! ("File_path.of_string: invalid string" ""))
-    (! ("File_path.of_string: invalid string" "invalid/\000/null")) |}]
+    (! ("File_path.of_string: invalid string" "invalid/\000/null"))
+    |}]
 ;;
 
 let%expect_test _ =
@@ -233,7 +236,8 @@ let%expect_test _ =
       (bin 21)
       (bin/exe 22)
       (bin/exe/file 23)
-      (filename.txt 24))) |}]
+      (filename.txt 24)))
+    |}]
 ;;
 
 module Expert = struct
@@ -286,7 +290,8 @@ let%expect_test _ =
     (! ("File_path.invariant: non-canonical representation" /bin//exe//file))
     (! ("File_path.invariant: non-canonical representation" /bin//exe//file/))
     (! ("File_path.invariant: invalid string" ""))
-    (! ("File_path.invariant: invalid string" "invalid/\000/null")) |}]
+    (! ("File_path.invariant: invalid string" "invalid/\000/null"))
+    |}]
 ;;
 
 let is_relative = File_path.is_relative
@@ -325,7 +330,8 @@ let%expect_test _ =
        /../..
        /././.
        /bin/exe
-       /bin/exe/file))) |}]
+       /bin/exe/file)))
+    |}]
 ;;
 
 let is_absolute = File_path.is_absolute
@@ -370,7 +376,8 @@ let%expect_test _ =
        ../..
        ././.
        bin/exe
-       bin/exe/file))) |}]
+       bin/exe/file)))
+    |}]
 ;;
 
 let to_absolute = File_path.to_absolute
@@ -416,7 +423,8 @@ let%expect_test _ =
     (/../.. -> (/../..))
     (/././. -> (/././.))
     (/bin/exe -> (/bin/exe))
-    (/bin/exe/file -> (/bin/exe/file)) |}]
+    (/bin/exe/file -> (/bin/exe/file))
+    |}]
 ;;
 
 let to_relative = File_path.to_relative
@@ -462,7 +470,8 @@ let%expect_test _ =
     (/../.. -> ())
     (/././. -> ())
     (/bin/exe -> ())
-    (/bin/exe/file -> ()) |}]
+    (/bin/exe/file -> ())
+    |}]
 ;;
 
 let to_absolute_exn = File_path.to_absolute_exn
@@ -518,7 +527,8 @@ let%expect_test _ =
     (/../.. -> (Ok /../..))
     (/././. -> (Ok /././.))
     (/bin/exe -> (Ok /bin/exe))
-    (/bin/exe/file -> (Ok /bin/exe/file)) |}]
+    (/bin/exe/file -> (Ok /bin/exe/file))
+    |}]
 ;;
 
 let to_relative_exn = File_path.to_relative_exn
@@ -574,7 +584,8 @@ let%expect_test _ =
     (/bin/exe -> (Error ("File_path.to_relative_exn: path is absolute" /bin/exe)))
     (/bin/exe/file
      ->
-     (Error ("File_path.to_relative_exn: path is absolute" /bin/exe/file))) |}]
+     (Error ("File_path.to_relative_exn: path is absolute" /bin/exe/file)))
+    |}]
 ;;
 
 let to_absolute_or_error = File_path.to_absolute_or_error
@@ -634,7 +645,8 @@ let%expect_test _ =
     (/../.. -> (Ok /../..))
     (/././. -> (Ok /././.))
     (/bin/exe -> (Ok /bin/exe))
-    (/bin/exe/file -> (Ok /bin/exe/file)) |}]
+    (/bin/exe/file -> (Ok /bin/exe/file))
+    |}]
 ;;
 
 let to_relative_or_error = File_path.to_relative_or_error
@@ -698,7 +710,8 @@ let%expect_test _ =
      (Error ("File_path.to_relative_or_error: path is absolute" /bin/exe)))
     (/bin/exe/file
      ->
-     (Error ("File_path.to_relative_or_error: path is absolute" /bin/exe/file))) |}]
+     (Error ("File_path.to_relative_or_error: path is absolute" /bin/exe/file)))
+    |}]
 ;;
 
 let of_absolute = File_path.of_absolute
@@ -732,7 +745,8 @@ let%expect_test _ =
     (/../.. -> /../..)
     (/././. -> /././.)
     (/bin/exe -> /bin/exe)
-    (/bin/exe/file -> /bin/exe/file) |}]
+    (/bin/exe/file -> /bin/exe/file)
+    |}]
 ;;
 
 let of_relative = File_path.of_relative
@@ -765,7 +779,8 @@ let%expect_test _ =
     (../.. -> ../..)
     (././. -> ././.)
     (bin/exe -> bin/exe)
-    (bin/exe/file -> bin/exe/file) |}]
+    (bin/exe/file -> bin/exe/file)
+    |}]
 ;;
 
 let of_part_relative = File_path.of_part_relative
@@ -787,7 +802,8 @@ let%expect_test _ =
     ("This is a sentence; it has punctuation, capitalization, and spaces!"
      ->
      "This is a sentence; it has punctuation, capitalization, and spaces!")
-    ("\001\255" -> "\001\255") |}]
+    ("\001\255" -> "\001\255")
+    |}]
 ;;
 
 let number_of_parts = File_path.number_of_parts
@@ -825,7 +841,8 @@ let%expect_test _ =
     (/../.. -> 2)
     (/././. -> 3)
     (/bin/exe -> 2)
-    (/bin/exe/file -> 3) |}]
+    (/bin/exe/file -> 3)
+    |}]
 ;;
 
 let basename = File_path.basename
@@ -865,7 +882,8 @@ let%expect_test _ =
     (/a/b -> (b))
     (/a/b/c -> (c))
     (/a/b/c/d -> (d))
-    (/long/chain/of/names/ending/in/this -> (this)) |}]
+    (/long/chain/of/names/ending/in/this -> (this))
+    |}]
 ;;
 
 let basename_exn = File_path.basename_exn
@@ -905,7 +923,8 @@ let%expect_test _ =
     (/a/b -> (Ok b))
     (/a/b/c -> (Ok c))
     (/a/b/c/d -> (Ok d))
-    (/long/chain/of/names/ending/in/this -> (Ok this)) |}]
+    (/long/chain/of/names/ending/in/this -> (Ok this))
+    |}]
 ;;
 
 let basename_or_error = File_path.basename_or_error
@@ -945,7 +964,8 @@ let%expect_test _ =
     (/a/b -> (Ok b))
     (/a/b/c -> (Ok c))
     (/a/b/c/d -> (Ok d))
-    (/long/chain/of/names/ending/in/this -> (Ok this)) |}]
+    (/long/chain/of/names/ending/in/this -> (Ok this))
+    |}]
 ;;
 
 let basename_defaulting_to_dot = File_path.basename_defaulting_to_dot
@@ -985,7 +1005,8 @@ let%expect_test _ =
     (/a/b -> b)
     (/a/b/c -> c)
     (/a/b/c/d -> d)
-    (/long/chain/of/names/ending/in/this -> this) |}]
+    (/long/chain/of/names/ending/in/this -> this)
+    |}]
 ;;
 
 let dirname = File_path.dirname
@@ -1025,7 +1046,8 @@ let%expect_test _ =
     (/a/b -> (/a))
     (/a/b/c -> (/a/b))
     (/a/b/c/d -> (/a/b/c))
-    (/long/chain/of/names/ending/in/this -> (/long/chain/of/names/ending/in)) |}]
+    (/long/chain/of/names/ending/in/this -> (/long/chain/of/names/ending/in))
+    |}]
 ;;
 
 let dirname_exn = File_path.dirname_exn
@@ -1067,7 +1089,8 @@ let%expect_test _ =
     (/a/b -> (Ok /a))
     (/a/b/c -> (Ok /a/b))
     (/a/b/c/d -> (Ok /a/b/c))
-    (/long/chain/of/names/ending/in/this -> (Ok /long/chain/of/names/ending/in)) |}]
+    (/long/chain/of/names/ending/in/this -> (Ok /long/chain/of/names/ending/in))
+    |}]
 ;;
 
 let dirname_or_error = File_path.dirname_or_error
@@ -1109,7 +1132,8 @@ let%expect_test _ =
     (/a/b -> (Ok /a))
     (/a/b/c -> (Ok /a/b))
     (/a/b/c/d -> (Ok /a/b/c))
-    (/long/chain/of/names/ending/in/this -> (Ok /long/chain/of/names/ending/in)) |}]
+    (/long/chain/of/names/ending/in/this -> (Ok /long/chain/of/names/ending/in))
+    |}]
 ;;
 
 let dirname_defaulting_to_dot_or_root = File_path.dirname_defaulting_to_dot_or_root
@@ -1149,7 +1173,8 @@ let%expect_test _ =
     (/a/b -> /a)
     (/a/b/c -> /a/b)
     (/a/b/c/d -> /a/b/c)
-    (/long/chain/of/names/ending/in/this -> /long/chain/of/names/ending/in) |}]
+    (/long/chain/of/names/ending/in/this -> /long/chain/of/names/ending/in)
+    |}]
 ;;
 
 let dirname_and_basename = File_path.dirname_and_basename
@@ -1191,7 +1216,8 @@ let%expect_test _ =
     (/a/b/c/d -> ((/a/b/c d)))
     (/long/chain/of/names/ending/in/this
      ->
-     ((/long/chain/of/names/ending/in this))) |}]
+     ((/long/chain/of/names/ending/in this)))
+    |}]
 ;;
 
 let append_to_basename_exn = File_path.append_to_basename_exn
@@ -1270,7 +1296,8 @@ let%expect_test _ =
        ((path /a/b/c) (suffix "invalid\000null")))))
     ((/long/chain/of/names/ending/in -this)
      ->
-     (Ok /long/chain/of/names/ending/in-this)) |}]
+     (Ok /long/chain/of/names/ending/in-this))
+    |}]
 ;;
 
 let append_part = File_path.append_part
@@ -1312,7 +1339,8 @@ let%expect_test _ =
     ((/a b) -> /a/b)
     ((/a/b c) -> /a/b/c)
     ((/a/b/c d) -> /a/b/c/d)
-    ((/long/chain/of/names/ending/in this) -> /long/chain/of/names/ending/in/this) |}]
+    ((/long/chain/of/names/ending/in this) -> /long/chain/of/names/ending/in/this)
+    |}]
 ;;
 
 let is_prefix = File_path.is_prefix
@@ -1361,7 +1389,8 @@ let%expect_test _ =
        ((t /) (prefix .))
        ((t .) (prefix /))
        ((t /a/b/c) (prefix a/b))
-       ((t a/b/c) (prefix /a/b))))) |}]
+       ((t a/b/c) (prefix /a/b)))))
+    |}]
 ;;
 
 let chop_prefix = File_path.chop_prefix
@@ -1419,7 +1448,8 @@ let%expect_test _ =
     (((t /) (prefix .)) -> ())
     (((t .) (prefix /)) -> ())
     (((t /a/b/c) (prefix a/b)) -> ())
-    (((t a/b/c) (prefix /a/b)) -> ()) |}]
+    (((t a/b/c) (prefix /a/b)) -> ())
+    |}]
 ;;
 
 let chop_prefix_exn = File_path.chop_prefix_exn
@@ -1512,7 +1542,8 @@ let%expect_test _ =
     (((t a/b/c) (prefix /a/b))
      ->
      (Error
-      ("File_path.chop_prefix_exn: not a prefix" ((path a/b/c) (prefix /a/b))))) |}]
+      ("File_path.chop_prefix_exn: not a prefix" ((path a/b/c) (prefix /a/b)))))
+    |}]
 ;;
 
 let chop_prefix_or_error = File_path.chop_prefix_or_error
@@ -1615,7 +1646,8 @@ let%expect_test _ =
      ->
      (Error
       ("File_path.chop_prefix_or_error: not a prefix"
-       ((path a/b/c) (prefix /a/b))))) |}]
+       ((path a/b/c) (prefix /a/b)))))
+    |}]
 ;;
 
 let chop_prefix_if_exists = File_path.chop_prefix_if_exists
@@ -1673,7 +1705,8 @@ let%expect_test _ =
     (((t /) (prefix .)) -> /)
     (((t .) (prefix /)) -> .)
     (((t /a/b/c) (prefix a/b)) -> /a/b/c)
-    (((t a/b/c) (prefix /a/b)) -> a/b/c) |}]
+    (((t a/b/c) (prefix /a/b)) -> a/b/c)
+    |}]
 ;;
 
 let is_suffix = File_path.is_suffix
@@ -1718,7 +1751,8 @@ let%expect_test _ =
        ((t /b/.) (suffix a/.))
        ((t /c/d) (suffix a/b))
        ((t /c) (suffix a/b/c))
-       ((t /b/c) (suffix a/b/c))))) |}]
+       ((t /b/c) (suffix a/b/c)))))
+    |}]
 ;;
 
 let chop_suffix = File_path.chop_suffix
@@ -1772,7 +1806,8 @@ let%expect_test _ =
     (((t /a/b/c/d) (suffix d)) -> (/a/b/c))
     (((t /long/chain/of/names/ending/in/this) (suffix ending/in/this))
      ->
-     (/long/chain/of/names)) |}]
+     (/long/chain/of/names))
+    |}]
 ;;
 
 let chop_suffix_exn = File_path.chop_suffix_exn
@@ -1853,7 +1888,8 @@ let%expect_test _ =
     (((t /a/b/c/d) (suffix d)) -> (Ok /a/b/c))
     (((t /long/chain/of/names/ending/in/this) (suffix ending/in/this))
      ->
-     (Ok /long/chain/of/names)) |}]
+     (Ok /long/chain/of/names))
+    |}]
 ;;
 
 let chop_suffix_or_error = File_path.chop_suffix_or_error
@@ -1941,7 +1977,8 @@ let%expect_test _ =
     (((t /a/b/c/d) (suffix d)) -> (Ok /a/b/c))
     (((t /long/chain/of/names/ending/in/this) (suffix ending/in/this))
      ->
-     (Ok /long/chain/of/names)) |}]
+     (Ok /long/chain/of/names))
+    |}]
 ;;
 
 let chop_suffix_if_exists = File_path.chop_suffix_if_exists
@@ -1995,7 +2032,8 @@ let%expect_test _ =
     (((t /a/b/c/d) (suffix d)) -> /a/b/c)
     (((t /long/chain/of/names/ending/in/this) (suffix ending/in/this))
      ->
-     /long/chain/of/names) |}]
+     /long/chain/of/names)
+    |}]
 ;;
 
 let append = File_path.append
@@ -2037,7 +2075,8 @@ let%expect_test _ =
     ((/a b/c/d) -> /a/b/c/d)
     ((/a/b c/d) -> /a/b/c/d)
     ((/a/b/c d) -> /a/b/c/d)
-    ((/long/chain/of/names ending/in/this) -> /long/chain/of/names/ending/in/this) |}]
+    ((/long/chain/of/names ending/in/this) -> /long/chain/of/names/ending/in/this)
+    |}]
 ;;
 
 let to_parts = File_path.to_parts
@@ -2085,7 +2124,8 @@ let%expect_test _ =
     (/../.. -> (.. ..))
     (/././. -> (. . .))
     (/bin/exe -> (bin exe))
-    (/bin/exe/file -> (bin exe file)) |}]
+    (/bin/exe/file -> (bin exe file))
+    |}]
 ;;
 
 let of_parts_absolute = File_path.of_parts_absolute
@@ -2134,7 +2174,8 @@ let%expect_test _ =
     (("\001\255" .) -> "/\001\255/.")
     ((.. "\001\255") -> "/../\001\255")
     ((.hidden bin.exe) -> /.hidden/bin.exe)
-    ((.hidden bin exe.file) -> /.hidden/bin/exe.file) |}]
+    ((.hidden bin exe.file) -> /.hidden/bin/exe.file)
+    |}]
 ;;
 
 let of_parts_relative = File_path.of_parts_relative
@@ -2183,7 +2224,8 @@ let%expect_test _ =
     (("\001\255" .) -> ("\001\255/."))
     ((.. "\001\255") -> ("../\001\255"))
     ((.hidden bin.exe) -> (.hidden/bin.exe))
-    ((.hidden bin exe.file) -> (.hidden/bin/exe.file)) |}]
+    ((.hidden bin exe.file) -> (.hidden/bin/exe.file))
+    |}]
 ;;
 
 let of_parts_relative_exn = File_path.of_parts_relative_exn
@@ -2232,7 +2274,8 @@ let%expect_test _ =
     (("\001\255" .) -> (Ok "\001\255/."))
     ((.. "\001\255") -> (Ok "../\001\255"))
     ((.hidden bin.exe) -> (Ok .hidden/bin.exe))
-    ((.hidden bin exe.file) -> (Ok .hidden/bin/exe.file)) |}]
+    ((.hidden bin exe.file) -> (Ok .hidden/bin/exe.file))
+    |}]
 ;;
 
 let of_parts_relative_or_error = File_path.of_parts_relative_or_error
@@ -2281,7 +2324,8 @@ let%expect_test _ =
     (("\001\255" .) -> (Ok "\001\255/."))
     ((.. "\001\255") -> (Ok "../\001\255"))
     ((.hidden bin.exe) -> (Ok .hidden/bin.exe))
-    ((.hidden bin exe.file) -> (Ok .hidden/bin/exe.file)) |}]
+    ((.hidden bin exe.file) -> (Ok .hidden/bin/exe.file))
+    |}]
 ;;
 
 let of_parts_relative_defaulting_to_dot = File_path.of_parts_relative_defaulting_to_dot
@@ -2331,7 +2375,8 @@ let%expect_test _ =
     (("\001\255" .) -> "\001\255/.")
     ((.. "\001\255") -> "../\001\255")
     ((.hidden bin.exe) -> .hidden/bin.exe)
-    ((.hidden bin exe.file) -> .hidden/bin/exe.file) |}]
+    ((.hidden bin exe.file) -> .hidden/bin/exe.file)
+    |}]
 ;;
 
 let of_parts_relative_nonempty = File_path.of_parts_relative_nonempty
@@ -2380,7 +2425,8 @@ let%expect_test _ =
     (("\001\255" .) -> "\001\255/.")
     ((.. "\001\255") -> "../\001\255")
     ((.hidden bin.exe) -> .hidden/bin.exe)
-    ((.hidden bin exe.file) -> .hidden/bin/exe.file) |}]
+    ((.hidden bin exe.file) -> .hidden/bin/exe.file)
+    |}]
 ;;
 
 let make_absolute = File_path.make_absolute
@@ -2429,7 +2475,8 @@ let%expect_test _ =
     ((/b/c/d /a) -> /b/c/d)
     ((/c/d /a/b) -> /c/d)
     ((/d /a/b/c) -> /d)
-    ((/ending/in/this /long/chain/of/names) -> /ending/in/this) |}]
+    ((/ending/in/this /long/chain/of/names) -> /ending/in/this)
+    |}]
 ;;
 
 let make_relative = File_path.make_relative
@@ -2478,7 +2525,8 @@ let%expect_test _ =
     ((/a/b/c/d /a/b/c) -> (d))
     ((/long/chain/of/names/ending/in/this /long/chain/of/names)
      ->
-     (ending/in/this)) |}]
+     (ending/in/this))
+    |}]
 ;;
 
 let make_relative_exn = File_path.make_relative_exn
@@ -2546,7 +2594,8 @@ let%expect_test _ =
     ((/a/b/c/d /a/b/c) -> (Ok d))
     ((/long/chain/of/names/ending/in/this /long/chain/of/names)
      ->
-     (Ok ending/in/this)) |}]
+     (Ok ending/in/this))
+    |}]
 ;;
 
 let make_relative_or_error = File_path.make_relative_or_error
@@ -2613,7 +2662,8 @@ let%expect_test _ =
     ((/a/b/c/d /a/b/c) -> (Ok d))
     ((/long/chain/of/names/ending/in/this /long/chain/of/names)
      ->
-     (Ok ending/in/this)) |}]
+     (Ok ending/in/this))
+    |}]
 ;;
 
 let make_relative_if_possible = File_path.make_relative_if_possible
@@ -2658,7 +2708,8 @@ let%expect_test _ =
     ((/a/b/c/d /a) -> b/c/d)
     ((/a/b/c/d /a/b) -> c/d)
     ((/a/b/c/d /a/b/c) -> d)
-    ((/long/chain/of/names/ending/in/this /long/chain/of/names) -> ending/in/this) |}]
+    ((/long/chain/of/names/ending/in/this /long/chain/of/names) -> ending/in/this)
+    |}]
 ;;
 
 module Variant = File_path.Variant
@@ -2704,7 +2755,8 @@ let%expect_test _ =
     (/../.. -> (Absolute /../..))
     (/././. -> (Absolute /././.))
     (/bin/exe -> (Absolute /bin/exe))
-    (/bin/exe/file -> (Absolute /bin/exe/file)) |}]
+    (/bin/exe/file -> (Absolute /bin/exe/file))
+    |}]
 ;;
 
 let of_variant = File_path.of_variant
@@ -2754,7 +2806,8 @@ let%expect_test _ =
     ((Absolute /../..) -> /../..)
     ((Absolute /././.) -> /././.)
     ((Absolute /bin/exe) -> /bin/exe)
-    ((Absolute /bin/exe/file) -> /bin/exe/file) |}]
+    ((Absolute /bin/exe/file) -> /bin/exe/file)
+    |}]
 ;;
 
 let simplify_dot = File_path.simplify_dot
@@ -2851,7 +2904,8 @@ let%expect_test _ =
     (/a/b/../. -> /a/b/..)
     (/a/.././b -> /a/../b)
     (/.././a/b -> /../a/b)
-    (/.././a/.././b/../. -> /../a/../b/..) |}]
+    (/.././a/.././b/../. -> /../a/../b/..)
+    |}]
 ;;
 
 let simplify_dot_and_dot_dot_naively = File_path.simplify_dot_and_dot_dot_naively
@@ -2964,7 +3018,8 @@ let%expect_test _ =
     (/a/b/../. -> /a)
     (/a/.././b -> /b)
     (/.././a/b -> /a/b)
-    (/.././a/.././b/../. -> /) |}]
+    (/.././a/.././b/../. -> /)
+    |}]
 ;;
 
 (* Test command-line autocompletion separately. *)

@@ -26,7 +26,8 @@ module Part = struct
         ((sexp "This is a sentence; it has punctuation, capitalization, and spaces!")
          (bin_io
           "CThis is a sentence; it has punctuation, capitalization, and spaces!"))
-        ((sexp "\001\255") (bin_io "\002\001\255")) |}]
+        ((sexp "\001\255") (bin_io "\002\001\255"))
+        |}]
     ;;
 
     module Map = File_path.Stable.Part.V1.Map
@@ -76,7 +77,8 @@ module Part = struct
           (.hidden 4)
           ("This is a sentence; it has punctuation, capitalization, and spaces!" 5)
           (bin 3)
-          (filename.txt 2))) |}]
+          (filename.txt 2)))
+        |}]
     ;;
   end
 end
@@ -112,7 +114,8 @@ module Relative = struct
         ((sexp ../..) (bin_io "\005../.."))
         ((sexp ././.) (bin_io "\005././."))
         ((sexp bin/exe) (bin_io "\007bin/exe"))
-        ((sexp bin/exe/file) (bin_io "\012bin/exe/file")) |}]
+        ((sexp bin/exe/file) (bin_io "\012bin/exe/file"))
+        |}]
     ;;
 
     module Map = File_path.Stable.Relative.V1.Map
@@ -182,7 +185,8 @@ module Relative = struct
           (bin 3)
           (bin/exe 10)
           (bin/exe/file 11)
-          (filename.txt 2))) |}]
+          (filename.txt 2)))
+        |}]
     ;;
   end
 end
@@ -219,7 +223,8 @@ module Absolute = struct
         ((sexp /../..) (bin_io "\006/../.."))
         ((sexp /././.) (bin_io "\006/././."))
         ((sexp /bin/exe) (bin_io "\b/bin/exe"))
-        ((sexp /bin/exe/file) (bin_io "\r/bin/exe/file")) |}]
+        ((sexp /bin/exe/file) (bin_io "\r/bin/exe/file"))
+        |}]
     ;;
 
     module Map = File_path.Stable.Absolute.V1.Map
@@ -293,7 +298,8 @@ module Absolute = struct
           (/bin 4)
           (/bin/exe 11)
           (/bin/exe/file 12)
-          (/filename.txt 3))) |}]
+          (/filename.txt 3)))
+        |}]
     ;;
   end
 end
@@ -343,7 +349,8 @@ module V1 = struct
       ((sexp /../..) (bin_io "\006/../.."))
       ((sexp /././.) (bin_io "\006/././."))
       ((sexp /bin/exe) (bin_io "\b/bin/exe"))
-      ((sexp /bin/exe/file) (bin_io "\r/bin/exe/file")) |}]
+      ((sexp /bin/exe/file) (bin_io "\r/bin/exe/file"))
+      |}]
   ;;
 
   module Map = File_path.Stable.V1.Map
@@ -465,6 +472,7 @@ module V1 = struct
         (bin 3)
         (bin/exe 10)
         (bin/exe/file 11)
-        (filename.txt 2))) |}]
+        (filename.txt 2)))
+      |}]
   ;;
 end

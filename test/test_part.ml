@@ -12,7 +12,8 @@ let%expect_test _ =
   Helpers.test_constants (module File_path.Part) [ dot; dot_dot ];
   [%expect {|
     .
-    .. |}]
+    ..
+    |}]
 ;;
 
 include (
@@ -35,7 +36,8 @@ let%expect_test _ =
      bin.exe
      binary
      filename.txt
-     "\255\001") |}]
+     "\255\001")
+    |}]
 ;;
 
 let%expect_test _ =
@@ -51,7 +53,8 @@ let%expect_test _ =
     (= "\001\255")
     (! ("File_path.Part.of_string: invalid string" ""))
     (! ("File_path.Part.of_string: invalid string" invalid/slash))
-    (! ("File_path.Part.of_string: invalid string" "invalid\000null")) |}]
+    (! ("File_path.Part.of_string: invalid string" "invalid\000null"))
+    |}]
 ;;
 
 let%expect_test _ =
@@ -89,7 +92,8 @@ let%expect_test _ =
       (.hidden 3)
       ("This is a sentence; it has punctuation, capitalization, and spaces!" 4)
       (bin 5)
-      (filename.txt 6))) |}]
+      (filename.txt 6)))
+    |}]
 ;;
 
 let invariant = File_path.Part.invariant
@@ -111,7 +115,8 @@ let%expect_test _ =
     (= "\001\255")
     (! ("File_path.Part.invariant: invalid string" ""))
     (! ("File_path.Part.invariant: invalid string" invalid/slash))
-    (! ("File_path.Part.invariant: invalid string" "invalid\000null")) |}]
+    (! ("File_path.Part.invariant: invalid string" "invalid\000null"))
+    |}]
 ;;
 
 let append_to_basename_exn = File_path.Part.append_to_basename_exn
@@ -146,7 +151,8 @@ let%expect_test _ =
        ((path c) (suffix "invalid\000null")))))
     ((long-hyphenated-name-ending-in -this)
      ->
-     (Ok long-hyphenated-name-ending-in-this)) |}]
+     (Ok long-hyphenated-name-ending-in-this))
+    |}]
 ;;
 
 (* Test command-line autocompletion separately. *)
