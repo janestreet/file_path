@@ -11,8 +11,8 @@ let dot_dot = File_path.Part.dot_dot
 include (
   File_path.Part :
     Identifiable.S
-      with type t := t
-       and type comparator_witness = File_path.Part.comparator_witness)
+    with type t := t
+     and type comparator_witness = File_path.Part.comparator_witness)
 
 let%bench_fun "equal =" =
   let x = Sys.opaque_identity (of_string "foo") in

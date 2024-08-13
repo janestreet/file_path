@@ -31,8 +31,8 @@ module type Version = sig
 
   include
     Comparable.Stable.V1.S
-      with type comparable := t
-       and type comparator_witness := comparator_witness
+    with type comparable := t
+     and type comparator_witness := comparator_witness
 end
 
 module type Helpers = sig

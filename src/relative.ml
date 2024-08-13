@@ -34,8 +34,9 @@ let dirname_exn t =
     (to_string t)
     ~if_some:Expert.unchecked_of_canonical_string
     ~if_none:(fun string ->
-    raise_s
-      [%sexp "File_path.Relative.dirname_exn: path contains no slash", (string : string)])
+      raise_s
+        [%sexp
+          "File_path.Relative.dirname_exn: path contains no slash", (string : string)])
 ;;
 
 let dirname_or_error t =
@@ -74,8 +75,9 @@ let top_dir_exn t =
     (to_string t)
     ~if_some:Part.Expert.unchecked_of_canonical_string
     ~if_none:(fun string ->
-    raise_s
-      [%sexp "File_path.Relative.top_dir_exn: path contains no slash", (string : string)])
+      raise_s
+        [%sexp
+          "File_path.Relative.top_dir_exn: path contains no slash", (string : string)])
 ;;
 
 let top_dir_or_error t =
@@ -107,10 +109,10 @@ let all_but_top_dir_exn t =
     (to_string t)
     ~if_some:Expert.unchecked_of_canonical_string
     ~if_none:(fun string ->
-    raise_s
-      [%sexp
-        "File_path.Relative.all_but_top_dir_exn: path contains no slash"
-        , (string : string)])
+      raise_s
+        [%sexp
+          "File_path.Relative.all_but_top_dir_exn: path contains no slash"
+          , (string : string)])
 ;;
 
 let all_but_top_dir_or_error t =
@@ -185,10 +187,10 @@ let chop_prefix_exn t ~prefix =
     ~prefix:(to_string prefix)
     ~if_some:Expert.unchecked_of_canonical_string
     ~if_none:(fun path ~prefix ->
-    raise_s
-      [%sexp
-        "File_path.Relative.chop_prefix_exn: not a prefix"
-        , { path : string; prefix : string }])
+      raise_s
+        [%sexp
+          "File_path.Relative.chop_prefix_exn: not a prefix"
+          , { path : string; prefix : string }])
 ;;
 
 let chop_prefix_or_error t ~prefix =
@@ -227,10 +229,10 @@ let chop_suffix_exn t ~suffix =
     ~suffix:(to_string suffix)
     ~if_some:Expert.unchecked_of_canonical_string
     ~if_none:(fun path ~suffix ->
-    raise_s
-      [%sexp
-        "File_path.Relative.chop_suffix_exn: not a suffix"
-        , { path : string; suffix : string }])
+      raise_s
+        [%sexp
+          "File_path.Relative.chop_suffix_exn: not a suffix"
+          , { path : string; suffix : string }])
 ;;
 
 let chop_suffix_or_error t ~suffix =

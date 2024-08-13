@@ -17,7 +17,7 @@ let quickcheck =
 let test_constants (type t) (module Path_type : Path_type with type t = t) list =
   List.iter list ~f:(fun t ->
     print_s [%sexp (t : Path_type.t)];
-    require_does_not_raise [%here] (fun () -> Path_type.invariant t))
+    require_does_not_raise (fun () -> Path_type.invariant t))
 ;;
 
 let test_compare (type t) (module Path_type : Path_type with type t = t) list =
@@ -26,7 +26,6 @@ let test_compare (type t) (module Path_type : Path_type with type t = t) list =
     if verbose then print_s [%sexp (sorted : Path_type.t list)];
     let resorted = List.sort permuted ~compare:Path_type.compare in
     require_equal
-      [%here]
       (module struct
         type t = Path_type.t list [@@deriving equal, sexp_of]
       end)
@@ -36,7 +35,6 @@ let test_compare (type t) (module Path_type : Path_type with type t = t) list =
   in
   test ~verbose:true (list, List.rev list);
   quickcheck
-    [%here]
     ~sexp_of:[%sexp_of: Path_type.t list * Path_type.t list]
     ~shrinker:[%quickcheck.shrinker: Path_type.t list * Path_type.t list]
     (let%bind.Quickcheck list = [%quickcheck.generator: Path_type.t list] in
@@ -47,7 +45,6 @@ let test_compare (type t) (module Path_type : Path_type with type t = t) list =
 
 let test_containers (type t) (module Path_type : Path_type with type t = t) list =
   print_and_check_container_sexps
-    [%here]
     (module Path_type)
     (List.sort list ~compare:Path_type.compare)
 ;;
@@ -57,26 +54,24 @@ let test_of_string (module Path_type : Path_type) strings =
     match Path_type.of_string string with
     | exception exn -> if verbose then print_s [%sexp "!", (exn : exn)]
     | t ->
-      let round_trip = require_no_allocation [%here] (fun () -> Path_type.to_string t) in
+      let round_trip = require_no_allocation (fun () -> Path_type.to_string t) in
       if verbose
       then
         if String.equal string round_trip
         then print_s [%sexp "=", (string : string)]
         else print_s [%sexp "~", (string : string), (round_trip : string)];
-      require_does_not_raise [%here] (fun () -> Path_type.invariant t);
+      require_does_not_raise (fun () -> Path_type.invariant t);
       if String.equal string round_trip
       then (
         require
-          [%here]
           (phys_equal string round_trip)
           ~if_false_then_print_s:(lazy [%message "unnecessarily copied string"]);
-        require_no_allocation [%here] (fun () ->
+        require_no_allocation (fun () ->
           ignore (Sys.opaque_identity (Path_type.of_string string) : Path_type.t)));
       let t_round_trip =
-        require_no_allocation [%here] (fun () -> Path_type.of_string round_trip)
+        require_no_allocation (fun () -> Path_type.of_string round_trip)
       in
       require_equal
-        [%here]
         (module Path_type)
         t
         t_round_trip
@@ -85,7 +80,6 @@ let test_of_string (module Path_type : Path_type) strings =
   in
   List.iter strings ~f:(test ~verbose:true);
   quickcheck
-    [%here]
     ~sexp_of:String.sexp_of_t
     String.quickcheck_generator
     ~shrinker:String.quickcheck_shrinker
@@ -99,7 +93,6 @@ let test_invariant (module Path_type : Path_type) strings =
     | () ->
       if verbose then print_s [%sexp "=", (t_unchecked : Path_type.t)];
       require_compare_equal
-        [%here]
         (module Path_type)
         t_unchecked
         (Path_type.of_string string)
@@ -112,7 +105,6 @@ let test_invariant (module Path_type : Path_type) strings =
          if String.equal string (Path_type.to_string t)
          then
            print_cr
-             [%here]
              [%sexp
                "[invariant] and [of_string] are inconsistent"
                , { string : string; t : Path_type.t; exn : exn }]
@@ -123,7 +115,6 @@ let test_invariant (module Path_type : Path_type) strings =
   in
   List.iter strings ~f:(test ~verbose:true);
   quickcheck
-    [%here]
     ~sexp_of:String.sexp_of_t
     String.quickcheck_generator
     ~shrinker:String.quickcheck_shrinker
@@ -139,12 +130,11 @@ let test_predicate
   =
   let success, failure = List.partition_tf examples ~f:predicate in
   print_s [%sexp { success : Input.t list; failure : Input.t list }];
-  if List.is_empty success then print_cr [%here] [%sexp "did not produce [true]"];
-  if List.is_empty failure then print_cr [%here] [%sexp "did not produce [false]"];
+  if List.is_empty success then print_cr [%sexp "did not produce [true]"];
+  if List.is_empty failure then print_cr [%sexp "did not produce [false]"];
   List.iter success ~f:(fun x -> correctness x true);
   List.iter failure ~f:(fun x -> correctness x false);
   quickcheck
-    [%here]
     ~sexp_of:Input.sexp_of_t
     Input.quickcheck_generator
     ~shrinker:Input.quickcheck_shrinker
@@ -163,12 +153,11 @@ let test
   let test ~verbose example =
     let result = function_to_test example in
     if verbose then print_s [%sexp (example : Input.t), "->", (result : Output.t)];
-    require_does_not_raise [%here] (fun () -> Output.invariant result);
+    require_does_not_raise (fun () -> Output.invariant result);
     correctness example result
   in
   List.iter examples ~f:(test ~verbose:true);
   quickcheck
-    [%here]
     ~sexp_of:Input.sexp_of_t
     Input.quickcheck_generator
     ~shrinker:Input.quickcheck_shrinker
@@ -192,7 +181,7 @@ module Bin_shape_universe = struct
         here
       | Some where ->
         print_cr
-          here
+          ~here
           [%sexp
             "duplicate bin_shape_digest"
             , { name : (string option[@sexp.option])
@@ -219,7 +208,7 @@ let test_stable_version
     Version.bin_shape_t
     here
     ~quiet:true;
-  print_and_check_stable_type here (module Version) list
+  print_and_check_stable_type ~here (module Version) list
 ;;
 
 let test_stable_containers
@@ -249,7 +238,7 @@ let test_stable_containers
     Version.Hash_set.bin_shape_t
     here
     ~name:"Hash_set";
-  print_and_check_container_sexps here (module Version) list
+  print_and_check_container_sexps ~here (module Version) list
 ;;
 
 module Option (Type : Type) = struct

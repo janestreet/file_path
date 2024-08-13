@@ -22,7 +22,8 @@ let dot_dot = File_path.dot_dot
 
 let%expect_test _ =
   Helpers.test_constants (module File_path) [ root; dot; dot_dot ];
-  [%expect {|
+  [%expect
+    {|
     /
     .
     ..
@@ -32,8 +33,8 @@ let%expect_test _ =
 include (
   File_path :
     Identifiable.S
-      with type t := t
-       and type comparator_witness = File_path.comparator_witness)
+    with type t := t
+     and type comparator_witness = File_path.comparator_witness)
 
 let%expect_test _ =
   Helpers.test_compare (module File_path) Examples.for_compare;
@@ -343,7 +344,6 @@ let%expect_test _ =
     ~examples:Examples.for_conversion
     ~correctness:(fun path is_absolute ->
       require_equal
-        [%here]
         (module Bool)
         is_absolute
         (not (is_relative path))
@@ -390,7 +390,6 @@ let%expect_test _ =
     ~examples:Examples.for_conversion
     ~correctness:(fun path to_absolute ->
       require_equal
-        [%here]
         (module Bool)
         (Option.is_some to_absolute)
         (is_absolute path)
@@ -437,7 +436,6 @@ let%expect_test _ =
     ~examples:Examples.for_conversion
     ~correctness:(fun path to_relative ->
       require_equal
-        [%here]
         (module Bool)
         (Option.is_some to_relative)
         (is_relative path)
@@ -484,7 +482,6 @@ let%expect_test _ =
     ~examples:Examples.for_conversion
     ~correctness:(fun path to_absolute_exn ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Absolute))
         (Or_error.ok to_absolute_exn)
         (to_absolute path)
@@ -541,7 +538,6 @@ let%expect_test _ =
     ~examples:Examples.for_conversion
     ~correctness:(fun path to_relative_exn ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Relative))
         (Or_error.ok to_relative_exn)
         (to_relative path)
@@ -598,7 +594,6 @@ let%expect_test _ =
     ~examples:Examples.for_conversion
     ~correctness:(fun path to_absolute_or_error ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Absolute))
         (Or_error.ok to_absolute_or_error)
         (to_absolute path)
@@ -659,7 +654,6 @@ let%expect_test _ =
     ~examples:Examples.for_conversion
     ~correctness:(fun path to_relative_or_error ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Relative))
         (Or_error.ok to_relative_or_error)
         (to_relative path)
@@ -724,7 +718,6 @@ let%expect_test _ =
     ~examples:Examples.Absolute.for_conversion
     ~correctness:(fun absolute path ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Absolute))
         (to_absolute path)
         (Some absolute)
@@ -759,7 +752,6 @@ let%expect_test _ =
     ~examples:Examples.Relative.for_conversion
     ~correctness:(fun relative path ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Relative))
         (to_relative path)
         (Some relative)
@@ -855,7 +847,6 @@ let%expect_test _ =
     ~examples:Examples.for_basename_and_dirname
     ~correctness:(fun path basename ->
       require_equal
-        [%here]
         (module Bool)
         (Option.is_none basename)
         (equal path root)
@@ -896,7 +887,6 @@ let%expect_test _ =
     ~examples:Examples.for_basename_and_dirname
     ~correctness:(fun path basename_exn ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Part))
         (Or_error.ok basename_exn)
         (basename path)
@@ -937,7 +927,6 @@ let%expect_test _ =
     ~examples:Examples.for_basename_and_dirname
     ~correctness:(fun path basename_or_error ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Part))
         (Or_error.ok basename_or_error)
         (basename path)
@@ -978,7 +967,6 @@ let%expect_test _ =
     ~examples:Examples.for_basename_and_dirname
     ~correctness:(fun path basename_defaulting_to_dot ->
       require_equal
-        [%here]
         (module File_path.Part)
         basename_defaulting_to_dot
         (Option.value (basename path) ~default:File_path.Part.dot)
@@ -1019,7 +1007,6 @@ let%expect_test _ =
     ~examples:Examples.for_basename_and_dirname
     ~correctness:(fun path dirname ->
       require_equal
-        [%here]
         (module Bool)
         (Option.is_none dirname)
         (Int.equal (number_of_parts path) (if is_absolute path then 0 else 1))
@@ -1060,7 +1047,6 @@ let%expect_test _ =
     ~examples:Examples.for_basename_and_dirname
     ~correctness:(fun path dirname_exn ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path))
         (Or_error.ok dirname_exn)
         (dirname path)
@@ -1103,7 +1089,6 @@ let%expect_test _ =
     ~examples:Examples.for_basename_and_dirname
     ~correctness:(fun path dirname_or_error ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path))
         (Or_error.ok dirname_or_error)
         (dirname path)
@@ -1146,7 +1131,6 @@ let%expect_test _ =
     ~examples:Examples.for_basename_and_dirname
     ~correctness:(fun path dirname_defaulting_to_dot_or_root ->
       require_equal
-        [%here]
         (module File_path)
         dirname_defaulting_to_dot_or_root
         (Option.value (dirname path) ~default:(if is_relative path then dot else root))
@@ -1187,7 +1171,6 @@ let%expect_test _ =
     ~examples:Examples.for_basename_and_dirname
     ~correctness:(fun path dirname_and_basename ->
       require_equal
-        [%here]
         (module Helpers.Option (Helpers.Tuple2 (File_path) (File_path.Part)))
         dirname_and_basename
         (Option.both (dirname path) (basename path))
@@ -1231,7 +1214,6 @@ let%expect_test _ =
     ~examples:Examples.for_append_to_basename
     ~correctness:(fun (path, string) append_to_basename_exn ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path))
         (Or_error.ok append_to_basename_exn)
         (if equal path root || String.mem string '/' || String.mem string '\000'
@@ -1310,13 +1292,11 @@ let%expect_test _ =
     ~output:(module File_path)
     ~correctness:(fun (path, part) append_part ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path))
         (dirname append_part)
         (Some path)
         ~message:"[append_part] and [dirname] are inconsistent";
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Part))
         (basename append_part)
         (Some part)
@@ -1403,7 +1383,6 @@ let%expect_test _ =
     ~examples:Examples.for_chop_prefix
     ~correctness:(fun { t; prefix } chop_prefix ->
       require_equal
-        [%here]
         (module Bool)
         (is_prefix t ~prefix)
         (Option.is_some chop_prefix)
@@ -1462,7 +1441,6 @@ let%expect_test _ =
     ~examples:Examples.for_chop_prefix
     ~correctness:(fun { t; prefix } chop_prefix_exn ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Relative))
         (chop_prefix t ~prefix)
         (Or_error.ok chop_prefix_exn)
@@ -1556,7 +1534,6 @@ let%expect_test _ =
     ~examples:Examples.for_chop_prefix
     ~correctness:(fun { t; prefix } chop_prefix_or_error ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Relative))
         (chop_prefix t ~prefix)
         (Or_error.ok chop_prefix_or_error)
@@ -1660,7 +1637,6 @@ let%expect_test _ =
     ~examples:Examples.for_chop_prefix
     ~correctness:(fun { t; prefix } chop_prefix_if_exists ->
       require_equal
-        [%here]
         (module File_path)
         (chop_prefix t ~prefix |> Option.value_map ~f:File_path.of_relative ~default:t)
         chop_prefix_if_exists
@@ -1765,7 +1741,6 @@ let%expect_test _ =
     ~examples:Examples.for_chop_suffix
     ~correctness:(fun { t; suffix } chop_suffix ->
       require_equal
-        [%here]
         (module Bool)
         (is_suffix t ~suffix)
         (Option.is_some chop_suffix)
@@ -1820,7 +1795,6 @@ let%expect_test _ =
     ~examples:Examples.for_chop_suffix
     ~correctness:(fun { t; suffix } chop_suffix_exn ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path))
         (chop_suffix t ~suffix)
         (Or_error.ok chop_suffix_exn)
@@ -1902,7 +1876,6 @@ let%expect_test _ =
     ~examples:Examples.for_chop_suffix
     ~correctness:(fun { t; suffix } chop_suffix_or_error ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path))
         (chop_suffix t ~suffix)
         (Or_error.ok chop_suffix_or_error)
@@ -1991,7 +1964,6 @@ let%expect_test _ =
     ~examples:Examples.for_chop_suffix
     ~correctness:(fun { t; suffix } chop_suffix_if_exists ->
       require_equal
-        [%here]
         (module File_path)
         (chop_suffix t ~suffix |> Option.value ~default:t)
         chop_suffix_if_exists
@@ -2046,13 +2018,11 @@ let%expect_test _ =
     ~examples:Examples.for_append
     ~correctness:(fun (prefix, suffix) append ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Relative))
         (Some suffix)
         (chop_prefix append ~prefix)
         ~message:"[append] and [chop_prefix] are inconsistent";
       require_equal
-        [%here]
         (module Helpers.Option (File_path))
         (Some prefix)
         (chop_suffix append ~suffix)
@@ -2089,7 +2059,6 @@ let%expect_test _ =
     ~examples:Examples.for_conversion
     ~correctness:(fun path to_parts ->
       require_equal
-        [%here]
         (module Int)
         (List.length to_parts)
         (number_of_parts path)
@@ -2138,7 +2107,6 @@ let%expect_test _ =
     ~examples:Examples.Part.lists_for_conversion
     ~correctness:(fun parts of_parts_absolute ->
       require_equal
-        [%here]
         (module Helpers.List (File_path.Part))
         (to_parts of_parts_absolute)
         parts
@@ -2188,7 +2156,6 @@ let%expect_test _ =
     ~examples:Examples.Part.lists_for_conversion
     ~correctness:(fun parts of_parts_relative ->
       require_equal
-        [%here]
         (module Helpers.List (File_path.Part))
         (Option.value_map of_parts_relative ~f:to_parts ~default:[])
         parts
@@ -2238,7 +2205,6 @@ let%expect_test _ =
     ~examples:Examples.Part.lists_for_conversion
     ~correctness:(fun parts of_parts_relative_exn ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path))
         (of_parts_relative parts)
         (Or_error.ok of_parts_relative_exn)
@@ -2288,7 +2254,6 @@ let%expect_test _ =
     ~examples:Examples.Part.lists_for_conversion
     ~correctness:(fun parts of_parts_relative_or_error ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path))
         (of_parts_relative parts)
         (Or_error.ok of_parts_relative_or_error)
@@ -2338,7 +2303,6 @@ let%expect_test _ =
     ~examples:Examples.Part.lists_for_conversion
     ~correctness:(fun parts of_parts_relative_defaulting_to_dot ->
       require_equal
-        [%here]
         (module File_path)
         (Option.value (of_parts_relative parts) ~default:dot)
         of_parts_relative_defaulting_to_dot
@@ -2390,7 +2354,6 @@ let%expect_test _ =
       (List.filter_map Examples.Part.lists_for_conversion ~f:Nonempty_list.of_list)
     ~correctness:(fun parts of_parts_relative_nonempty ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path))
         (of_parts_relative (Nonempty_list.to_list parts))
         (Some of_parts_relative_nonempty)
@@ -2441,14 +2404,12 @@ let%expect_test _ =
       if is_absolute path
       then
         require_equal
-          [%here]
           (module File_path.Absolute)
           (to_absolute_exn path)
           make_absolute
           ~message:"[make_absolute] and [to_absolute_exn] are inconsistent"
       else
         require_equal
-          [%here]
           (module Helpers.Option (File_path.Relative))
           (Some (to_relative_exn path))
           (File_path.Absolute.chop_prefix make_absolute ~prefix:under)
@@ -2489,7 +2450,6 @@ let%expect_test _ =
     ~examples:Examples.for_make_relative
     ~correctness:(fun (path, if_under) make_relative ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Relative))
         make_relative
         (if is_relative path
@@ -2540,7 +2500,6 @@ let%expect_test _ =
     ~examples:Examples.for_make_relative
     ~correctness:(fun (path, if_under) make_relative_exn ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Relative))
         (Or_error.ok make_relative_exn)
         (make_relative path ~if_under)
@@ -2608,7 +2567,6 @@ let%expect_test _ =
     ~examples:Examples.for_make_relative
     ~correctness:(fun (path, if_under) make_relative_or_error ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Relative))
         (Or_error.ok make_relative_or_error)
         (make_relative path ~if_under)
@@ -2676,7 +2634,6 @@ let%expect_test _ =
     ~examples:Examples.for_make_relative
     ~correctness:(fun (path, if_under) make_relative_if_possible ->
       require_equal
-        [%here]
         (module File_path)
         make_relative_if_possible
         (Option.value_map (make_relative path ~if_under) ~f:of_relative ~default:path)
@@ -2769,7 +2726,6 @@ let%expect_test _ =
     ~examples:Examples.variant_for_conversion
     ~correctness:(fun variant of_variant ->
       require_equal
-        [%here]
         (module Variant)
         variant
         (to_variant of_variant)
@@ -2820,7 +2776,6 @@ let%expect_test _ =
     ~examples:Examples.for_simplify
     ~correctness:(fun original simplified ->
       require_equal
-        [%here]
         (module File_path)
         simplified
         (let parts =
@@ -2832,7 +2787,7 @@ let%expect_test _ =
         ~message:"[simplify_dot] is not equivalent to filtering out [.] parts";
       if equal original simplified
       then
-        require_no_allocation [%here] (fun () ->
+        require_no_allocation (fun () ->
           ignore (Sys.opaque_identity (simplify_dot original) : t)));
   [%expect
     {|
@@ -2918,7 +2873,6 @@ let%expect_test _ =
     ~examples:Examples.for_simplify
     ~correctness:(fun original simplified ->
       require_equal
-        [%here]
         (module Helpers.List (File_path.Part))
         (to_parts simplified
          |> List.drop_while ~f:(File_path.Part.( = ) File_path.Part.dot_dot))
@@ -2927,26 +2881,23 @@ let%expect_test _ =
         ~message:
           "not all [..] parts in [simplify_dot_and_dot_dot_naively] are at the beginning";
       require_equal
-        [%here]
         (module File_path)
         simplified
         (simplify_dot_and_dot_dot_naively (simplify_dot original))
         ~message:"[simplify_dot_and_dot_dot_naively] does not ignore [.] parts";
       require_equal
-        [%here]
         (module File_path)
         simplified
         (simplify_dot simplified)
         ~message:"[simplify_dot_and_dot_dot_naively] does not simplify all [.] parts";
       require_equal
-        [%here]
         (module File_path)
         simplified
         (simplify_dot_and_dot_dot_naively simplified)
         ~message:"[simplify_dot_and_dot_dot_naively] is not idempotent";
       if equal original simplified
       then
-        require_no_allocation [%here] (fun () ->
+        require_no_allocation (fun () ->
           ignore (Sys.opaque_identity (simplify_dot_and_dot_dot_naively original) : t)));
   [%expect
     {|

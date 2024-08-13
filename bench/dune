@@ -1,6 +1,6 @@
 (library
  (name file_path_bench)
  (public_name file_path.file_path_bench)
- (libraries core file_path)
+ (libraries core file_path core_kernel.nonempty_list)
  (preprocess
   (pps ppx_jane)))

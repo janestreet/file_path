@@ -10,7 +10,8 @@ let dot_dot = File_path.Part.dot_dot
 
 let%expect_test _ =
   Helpers.test_constants (module File_path.Part) [ dot; dot_dot ];
-  [%expect {|
+  [%expect
+    {|
     .
     ..
     |}]
@@ -19,8 +20,8 @@ let%expect_test _ =
 include (
   File_path.Part :
     Identifiable.S
-      with type t := t
-       and type comparator_witness = File_path.Part.comparator_witness)
+    with type t := t
+     and type comparator_witness = File_path.Part.comparator_witness)
 
 let%expect_test _ =
   Helpers.test_compare (module File_path.Part) Examples.Part.for_compare;
@@ -130,7 +131,6 @@ let%expect_test _ =
     ~examples:Examples.Part.for_append_to_basename
     ~correctness:(fun (path, string) append_to_basename_exn ->
       require_equal
-        [%here]
         (module Helpers.Option (File_path.Part))
         (Or_error.ok append_to_basename_exn)
         (Option.try_with (fun () -> of_string (to_string path ^ string))));

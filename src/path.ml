@@ -179,9 +179,9 @@ let chop_prefix_exn t ~prefix =
     ~prefix:(to_string prefix)
     ~if_some:Relative.Expert.unchecked_of_canonical_string
     ~if_none:(fun path ~prefix ->
-    raise_s
-      [%sexp
-        "File_path.chop_prefix_exn: not a prefix", { path : string; prefix : string }])
+      raise_s
+        [%sexp
+          "File_path.chop_prefix_exn: not a prefix", { path : string; prefix : string }])
 ;;
 
 let chop_prefix_or_error t ~prefix =
@@ -222,9 +222,9 @@ let chop_suffix_exn t ~suffix =
     ~suffix:(Relative.to_string suffix)
     ~if_some:Expert.unchecked_of_canonical_string
     ~if_none:(fun path ~suffix ->
-    raise_s
-      [%sexp
-        "File_path.chop_suffix_exn: not a suffix", { path : string; suffix : string }])
+      raise_s
+        [%sexp
+          "File_path.chop_suffix_exn: not a suffix", { path : string; suffix : string }])
 ;;
 
 let chop_suffix_or_error t ~suffix =
@@ -327,10 +327,10 @@ let make_relative_exn t ~if_under =
       ~prefix:(Absolute.to_string if_under)
       ~if_some:Relative.Expert.unchecked_of_canonical_string
       ~if_none:(fun string ~prefix ->
-      raise_s
-        [%sexp
-          "File_path.make_relative_exn: cannot make path relative"
-          , { path = (string : string); if_under = (prefix : string) }])
+        raise_s
+          [%sexp
+            "File_path.make_relative_exn: cannot make path relative"
+            , { path = (string : string); if_under = (prefix : string) }])
 ;;
 
 let make_relative_or_error t ~if_under =

@@ -18,6 +18,7 @@ depends: [
   "expect_test_helpers_async"
   "expect_test_helpers_core"
   "ppx_jane"
+  "ppx_stable_witness"
   "dune"                      {>= "3.11.0"}
 ]
 available: arch != "arm32" & arch != "x86_32"
