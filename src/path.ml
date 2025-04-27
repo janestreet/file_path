@@ -366,7 +366,7 @@ module Variant = struct
   [@@deriving compare, equal, quickcheck, sexp_of]
 
   let invariant t =
-    Invariant.invariant [%here] t sexp_of_t (fun () ->
+    Invariant.invariant t sexp_of_t (fun () ->
       match t with
       | Relative relative -> Relative.invariant relative
       | Absolute absolute -> Absolute.invariant absolute)
