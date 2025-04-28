@@ -74,8 +74,7 @@ module type S = sig
       unchanged if given a single-part path. *)
   val all_but_top_dir_defaulting_to_self : t -> t
 
-  (** Like [Option.both (top_dir t) (all_but_top_dir t)]. Allocates [Some] at most
-      once. *)
+  (** Like [Option.both (top_dir t) (all_but_top_dir t)]. Allocates [Some] at most once. *)
   val top_dir_and_all_but_top_dir : t -> (Part.t * t) option
 
   (** Adds the given string as a suffix of the path's basename. Raises if the string

@@ -55,8 +55,8 @@ module type Helpers = sig
       [of_string]'s raising / canonicalizing behavior. *)
   val test_invariant : (module Path_type) -> string list -> unit
 
-  (** Makes sure container types are constructed appropriately. (e.g., not just [module
-      Map = String.Map]). *)
+  (** Makes sure container types are constructed appropriately. (e.g., not just
+      [module Map = String.Map]). *)
   val test_containers : (module Path_type with type t = 'a) -> 'a list -> unit
 
   (** Tests a boolean function. Prints [true] and [false] examples. Makes sure both cases

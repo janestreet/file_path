@@ -19,8 +19,8 @@ module type S = sig
   (** The parent directory, i.e. [..]. *)
   val dot_dot : t
 
-  (** Adds the given string as a suffix of the path part. Raises if the string
-      contains characters that are illegal for a path part.
+  (** Adds the given string as a suffix of the path part. Raises if the string contains
+      characters that are illegal for a path part.
 
       We use "_to_basename_" in the name for consistency with similar operations on other
       path types. A path part is its own basename. *)
