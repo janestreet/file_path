@@ -8,12 +8,15 @@ open! Core
     We indicate the different type of paths with characters. The first three are valid
     prefix operator characters.
 
-    '~' means a relative path with no leading slash '!' means an absolute path with a
-    leading slash '?' means a path that may be relative or absolute '$' means a string
+    - '~' means a relative path with no leading slash
+    - '!' means an absolute path with a leading slash
+    - '?' means a path that may be relative or absolute
+    - '$' means a string
 
-    '/' means a compound path that may contain slashes, or path concatenation with a slash
-    '.' means a path part with no slashes '^' means concatenation with an ordinary string
-    that does not represent a path *)
+    - '/' means a compound path that may contain slashes, or path concatenation with a
+      slash
+    - '.' means a path part with no slashes
+    - '^' means concatenation with an ordinary string that does not represent a path *)
 module type S = sig
   module Types : Types.S
   open Types
