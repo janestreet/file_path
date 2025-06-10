@@ -25,8 +25,9 @@ let basename t =
   Path_string.basename
     (to_string t)
     ~if_some:Part.Expert.unchecked_of_canonical_string
-    ~if_none:(fun _ -> (* all relative paths have at least one part *)
-                       assert false)
+    ~if_none:(fun _ ->
+      (* all relative paths have at least one part *)
+      assert false)
 ;;
 
 let dirname_exn t =

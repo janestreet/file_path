@@ -5,9 +5,8 @@ let arg_type = File_path.arg_type
 
 let%expect_test _ =
   let%bind () =
-    Helpers_async.test_arg_type
-      (module File_path)
-      ~expect_output:(fun () -> [%expect.output])
+    Helpers_async.test_arg_type (module File_path) ~expect_output:(fun () ->
+      [%expect.output])
   in
   [%expect
     {|
