@@ -235,7 +235,7 @@ let of_parts parts =
 let number_of_parts t = Path_string.number_of_parts (to_string t)
 
 include
-  Quickcheckable.Of_quickcheckable
+  Quickcheckable.Of_quickcheckable [@mode portable]
     (Path_string.Quickcheckable_absolute)
     (struct
       type nonrec t = t

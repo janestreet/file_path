@@ -5,7 +5,7 @@ include Helpers_intf
 let () =
   (* [File_path] has verbose tests that read better with less wasted vertical space. The
      extra alignment and so forth in the default style is not worth it. *)
-  sexp_style := Sexp_style.simple_pretty
+  Dynamic.set_root sexp_style Sexp_style.simple_pretty
 ;;
 
 let quickcheck =

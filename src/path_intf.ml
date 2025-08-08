@@ -211,7 +211,7 @@ module type S = sig
     type t =
       | Relative of Relative.t
       | Absolute of Absolute.t
-    [@@deriving compare, equal, quickcheck, sexp_of]
+    [@@deriving compare ~localize, equal ~localize, quickcheck, sexp_of]
 
     include Invariant.S with type t := t
   end

@@ -42,7 +42,7 @@ let append_to_basename_exn path suffix =
 ;;
 
 include
-  Quickcheckable.Of_quickcheckable
+  Quickcheckable.Of_quickcheckable [@mode portable]
     (Path_string.Quickcheckable_part)
     (struct
       type nonrec t = t

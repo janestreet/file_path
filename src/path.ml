@@ -363,7 +363,7 @@ module Variant = struct
   type t =
     | Relative of Relative.t
     | Absolute of Absolute.t
-  [@@deriving compare, equal, quickcheck, sexp_of]
+  [@@deriving compare ~localize, equal ~localize, quickcheck ~portable, sexp_of]
 
   let invariant t =
     Invariant.invariant t sexp_of_t (fun () ->
@@ -386,7 +386,7 @@ let to_variant t : Variant.t =
 ;;
 
 include
-  Quickcheckable.Of_quickcheckable
+  Quickcheckable.Of_quickcheckable [@mode portable]
     (Path_string.Quickcheckable_path)
     (struct
       type nonrec t = t

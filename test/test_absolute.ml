@@ -3,7 +3,8 @@
 open! Core
 open Expect_test_helpers_core
 
-type t = File_path.Absolute.t [@@deriving quickcheck, sexp, sexp_grammar]
+type t = File_path.Absolute.t
+[@@deriving compare ~localize, equal ~localize, quickcheck, sexp, sexp_grammar]
 
 let root = File_path.Absolute.root
 
@@ -14,9 +15,12 @@ let%expect_test _ =
 
 include (
   File_path.Absolute :
-    Identifiable.S
-    with type t := t
-     and type comparator_witness = File_path.Absolute.comparator_witness)
+  sig
+    include
+      Identifiable.S
+      with type t := t
+       and type comparator_witness = File_path.Absolute.comparator_witness
+  end)
 
 let%expect_test _ =
   Helpers.test_compare (module File_path.Absolute) Examples.Absolute.for_compare;

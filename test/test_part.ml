@@ -3,7 +3,8 @@
 open! Core
 open Expect_test_helpers_core
 
-type t = File_path.Part.t [@@deriving quickcheck, sexp, sexp_grammar]
+type t = File_path.Part.t
+[@@deriving compare ~localize, equal ~localize, quickcheck, sexp, sexp_grammar]
 
 let dot = File_path.Part.dot
 let dot_dot = File_path.Part.dot_dot
@@ -19,9 +20,12 @@ let%expect_test _ =
 
 include (
   File_path.Part :
-    Identifiable.S
-    with type t := t
-     and type comparator_witness = File_path.Part.comparator_witness)
+  sig
+    include
+      Identifiable.S
+      with type t := t
+       and type comparator_witness = File_path.Part.comparator_witness
+  end)
 
 let%expect_test _ =
   Helpers.test_compare (module File_path.Part) Examples.Part.for_compare;

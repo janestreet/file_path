@@ -16,7 +16,10 @@ module type S = sig
       [to_string] is the identity function. [of_string] returns its input when the input
       is a valid string in canonical form. *)
   include
-    Identifiable.S with type t := t and type comparator_witness := comparator_witness
+    Identifiable.S
+    [@mode portable]
+    with type t := t
+     and type comparator_witness := comparator_witness
 
   include Invariant.S with type t := t
 
@@ -27,7 +30,8 @@ end
 (** Stable path type serialization includes bin-io and sexp serialization, along with
     stable set, map, hash table, and hash set serializations. *)
 module type Version = sig
-  type t [@@deriving equal, hash, sexp_grammar, stable_witness]
+  type t
+  [@@deriving equal ~localize, compare ~localize, hash, sexp_grammar, stable_witness]
 
   include Stable_comparable.V1 with type t := t
   include Hashable.Stable.V1.S with type key := t

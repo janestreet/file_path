@@ -14,7 +14,8 @@
 open! Core
 open Expect_test_helpers_core
 
-type t = File_path.t [@@deriving quickcheck, sexp, sexp_grammar]
+type t = File_path.t
+[@@deriving compare ~localize, equal ~localize, quickcheck, sexp, sexp_grammar]
 
 let root = File_path.root
 let dot = File_path.dot
@@ -32,9 +33,12 @@ let%expect_test _ =
 
 include (
   File_path :
-    Identifiable.S
-    with type t := t
-     and type comparator_witness = File_path.comparator_witness)
+  sig
+    include
+      Identifiable.S
+      with type t := t
+       and type comparator_witness = File_path.comparator_witness
+  end)
 
 let%expect_test _ =
   Helpers.test_compare (module File_path) Examples.for_compare;

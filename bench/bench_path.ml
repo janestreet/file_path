@@ -18,7 +18,8 @@
 
 open! Core
 
-type t = File_path.t [@@deriving quickcheck, sexp, sexp_grammar]
+type t = File_path.t
+[@@deriving compare ~localize, equal ~localize, quickcheck, sexp, sexp_grammar]
 
 let arg_type = File_path.arg_type
 let root = File_path.root
@@ -27,9 +28,12 @@ let dot_dot = File_path.dot_dot
 
 include (
   File_path :
-    Identifiable.S
-    with type t := t
-     and type comparator_witness = File_path.comparator_witness)
+  sig
+    include
+      Identifiable.S
+      with type t := t
+       and type comparator_witness = File_path.comparator_witness
+  end)
 
 let%bench_fun "equal =" =
   let x = Sys.opaque_identity (of_string "foo/bar/baz") in

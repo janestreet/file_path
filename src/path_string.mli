@@ -27,7 +27,8 @@ val is_canonical : string -> bool
 val canonicalize : string -> string
 
 (** Compares two paths lexicographically as lists of parts. *)
-val compare : string -> string -> int
+val%template compare : string -> string -> int
+[@@mode m = (global, local)]
 
 (** Reports if a path is absolute, i.e. starts with a slash. *)
 val is_absolute : string -> bool

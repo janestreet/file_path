@@ -34,7 +34,7 @@ let is_root string = String.equal string root
 
 (* Compare paths lexicographically as lists of parts. Compares parts inline,
    character-by-character, to avoid allocating an actual [Part.t]. *)
-let compare =
+let%template[@mode local] compare =
   let char_value char =
     (* Comparing slash as less than all other characters gives the same effect as
        comparing a list of parts separated by slash. *)
@@ -54,11 +54,13 @@ let compare =
       | 0 -> compare_from ~pos:(pos + 1) ~a ~b ~len_a ~len_b
       | c -> c)
   in
-  let compare a b =
+  let[@mode local] compare a b =
     compare_from ~pos:0 ~a ~b ~len_a:(String.length a) ~len_b:(String.length b)
   in
-  compare
+  compare [@mode local]
 ;;
+
+let%template compare = [%eta2 compare [@mode local]]
 
 (* Obviously, [is_valid] must be correct for even invalid strings. *)
 let is_valid =
@@ -465,15 +467,17 @@ module Quickcheckable_part = struct
   type t = string
 
   let char_generator =
-    Base_quickcheck.Generator.filter Base_quickcheck.Generator.char ~f:(function
+    (Base_quickcheck.Generator.filter [@mode portable])
+      Base_quickcheck.Generator.char
+      ~f:(function
       | '/' | '\000' -> false
       | _ -> true)
   ;;
 
   let quickcheck_generator =
-    Base_quickcheck.Generator.union
-      [ Base_quickcheck.Generator.string_non_empty_of char_generator
-      ; Base_quickcheck.Generator.of_list [ dot; dot_dot ]
+    (Base_quickcheck.Generator.union [@mode portable])
+      [ (Base_quickcheck.Generator.string_non_empty_of [@mode portable]) char_generator
+      ; (Base_quickcheck.Generator.of_list [@mode portable]) [ dot; dot_dot ]
       ]
   ;;
 
@@ -485,9 +489,9 @@ module Quickcheckable_relative = struct
   type t = string
 
   include
-    Quickcheckable.Of_quickcheckable_filtered
+    Quickcheckable.Of_quickcheckable_filtered [@mode portable]
       (struct
-        type t = Quickcheckable_part.t list [@@deriving quickcheck]
+        type t = Quickcheckable_part.t list [@@deriving quickcheck ~portable]
       end)
       (struct
         type t = string
@@ -507,9 +511,9 @@ module Quickcheckable_absolute = struct
   type t = string
 
   include
-    Quickcheckable.Of_quickcheckable
+    Quickcheckable.Of_quickcheckable [@mode portable]
       (struct
-        type t = Quickcheckable_part.t list [@@deriving quickcheck]
+        type t = Quickcheckable_part.t list [@@deriving quickcheck ~portable]
       end)
       (struct
         type t = string
@@ -523,10 +527,10 @@ module Quickcheckable_path = struct
   type t = string
 
   include
-    Quickcheckable.Of_quickcheckable
+    Quickcheckable.Of_quickcheckable [@mode portable]
       (struct
         type t = (Quickcheckable_relative.t, Quickcheckable_absolute.t) Either.t
-        [@@deriving quickcheck]
+        [@@deriving quickcheck ~portable]
       end)
       (struct
         type t = string

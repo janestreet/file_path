@@ -42,7 +42,7 @@ module Make (T : Types.Type) (Basis : Basis) = struct
         then raise_non_canonical ~name:"invariant" string
       ;;
 
-      include Binable.Of_stringable_with_uuid (struct
+      include Binable.Of_stringable_with_uuid [@mode portable] (struct
           type nonrec t = t
 
           let of_string = of_string
@@ -50,7 +50,7 @@ module Make (T : Types.Type) (Basis : Basis) = struct
           let caller_identity = Basis.caller_identity
         end)
 
-      include Sexpable.Of_stringable (struct
+      include Sexpable.Of_stringable [@mode portable] (struct
           type nonrec t = t
 
           let of_string = of_string
@@ -63,8 +63,8 @@ module Make (T : Types.Type) (Basis : Basis) = struct
         Stable_witness.of_serializable [%stable_witness: string] of_string to_string
       ;;
 
-      include Identifiable.Make_using_comparator (struct
-          type nonrec t = t [@@deriving bin_io, compare, hash, sexp]
+      include Identifiable.Make_using_comparator [@mode portable] (struct
+          type nonrec t = t [@@deriving bin_io, compare ~localize, hash, sexp]
           type nonrec comparator_witness = comparator_witness
 
           let of_string = of_string
@@ -82,10 +82,12 @@ module Make (T : Types.Type) (Basis : Basis) = struct
   include Stable.V1
 
   let arg_type =
-    Command.Arg_type.create of_string ~complete:(fun (_ : Univ_map.t) ~part ->
-      try Basis.autocomplete part with
-      | (_ : exn)
-      (* don't mask exceptions during inline tests *)
-        when not Ppx_inline_test_lib.am_running -> [])
+    (Command.Arg_type.create [@mode portable])
+      of_string
+      ~complete:(fun (_ : Univ_map.t) ~part ->
+        try Basis.autocomplete part with
+        | (_ : exn)
+        (* don't mask exceptions during inline tests *)
+          when not Ppx_inline_test_lib.am_running -> [])
   ;;
 end
