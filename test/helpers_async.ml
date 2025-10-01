@@ -124,11 +124,11 @@ let completions param arg ~expect_output =
 
 let with_env ~key ~data f =
   let original = Unix.getenv key in
-  Unix.putenv ~key ~data;
+  (Unix.putenv [@ocaml.alert "-unsafe_multidomain"]) ~key ~data;
   Exn.protect ~f ~finally:(fun () ->
     match original with
-    | None -> Unix.unsetenv key
-    | Some string -> Unix.putenv ~key ~data:string)
+    | None -> (Unix.unsetenv [@ocaml.alert "-unsafe_multidomain"]) key
+    | Some string -> (Unix.putenv [@ocaml.alert "-unsafe_multidomain"]) ~key ~data:string)
 ;;
 
 let rec remove_duplicate_slashes string =
