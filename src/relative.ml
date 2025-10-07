@@ -25,8 +25,9 @@ let basename t =
   Path_string.basename
     (to_string t)
     ~if_some:Part.Expert.unchecked_of_canonical_string
-    ~if_none:(fun _ -> (* all relative paths have at least one part *)
-                       assert false)
+    ~if_none:(fun _ ->
+      (* all relative paths have at least one part *)
+      assert false)
 ;;
 
 let dirname_exn t =
@@ -305,7 +306,7 @@ let of_parts_nonempty parts = of_parts_exn (Nonempty_list.to_list parts)
 let number_of_parts t = Path_string.number_of_parts (to_string t)
 
 include
-  Quickcheckable.Of_quickcheckable
+  Quickcheckable.Of_quickcheckable [@mode portable]
     (Path_string.Quickcheckable_relative)
     (struct
       type nonrec t = t

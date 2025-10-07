@@ -8,7 +8,7 @@ open! Core
 
     Canonical relative path strings must contain no consecutive slashes and must not end
     in a slash. *)
-module type S = sig
+module type S = sig @@ portable
   module Types : Types.S
   open Types
 
@@ -174,7 +174,7 @@ module type S = sig
   val number_of_parts : t -> int
 end
 
-module type Relative = sig
+module type Relative = sig @@ portable
   module type S = S
 
   include S with module Types := Types

@@ -1,3 +1,5 @@
+@@ portable
+
 (** This module is for internal use only.
 
     It defines the shared logic for manipulating compound path strings used by [Path],
@@ -27,7 +29,8 @@ val is_canonical : string -> bool
 val canonicalize : string -> string
 
 (** Compares two paths lexicographically as lists of parts. *)
-val compare : string -> string -> int
+val%template compare : string @ m -> string @ m -> int
+[@@mode m = (global, local)]
 
 (** Reports if a path is absolute, i.e. starts with a slash. *)
 val is_absolute : string -> bool

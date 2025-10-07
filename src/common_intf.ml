@@ -1,7 +1,7 @@
 open! Core
 
 (** Common functionality shared by path types. *)
-module type S = sig
+module type S = sig @@ portable
   module Type : Types.Type
 
   type t = Type.t
@@ -16,7 +16,10 @@ module type S = sig
       [to_string] is the identity function. [of_string] returns its input when the input
       is a valid string in canonical form. *)
   include
-    Identifiable.S with type t := t and type comparator_witness := comparator_witness
+    Identifiable.S
+    [@mode portable]
+    with type t := t
+     and type comparator_witness := comparator_witness
 
   include Invariant.S with type t := t
 
@@ -26,14 +29,15 @@ end
 
 (** Stable path type serialization includes bin-io and sexp serialization, along with
     stable set, map, hash table, and hash set serializations. *)
-module type Version = sig
-  type t [@@deriving equal, hash, sexp_grammar, stable_witness]
+module type Version = sig @@ portable
+  type t
+  [@@deriving equal ~localize, compare ~localize, hash, sexp_grammar, stable_witness]
 
   include Stable_comparable.V1 with type t := t
   include Hashable.Stable.V1.S with type key := t
 end
 
-module type Stable = sig
+module type Stable = sig @@ portable
   module Type : Types.Type
 
   module V1 :
@@ -41,7 +45,7 @@ module type Stable = sig
 end
 
 (** For internal use. Must be implemented to define a path type. *)
-module type Basis = sig
+module type Basis = sig @@ portable
   val module_name : string
   val caller_identity : Bin_prot.Shape.Uuid.t
   val is_valid : string -> bool
@@ -50,13 +54,13 @@ module type Basis = sig
   val autocomplete : string -> string list
 end
 
-module type Common = sig
+module type Common = sig @@ portable
   module type Basis = Basis
   module type S = S
   module type Stable = Stable
 
   (** For internal use. Defines new path types. *)
-  module Make (T : Types.Type) (Basis : Basis) : sig
+  module Make (T : Types.Type) (Basis : Basis) : sig @@ portable
     include S with module Type := T
     module Stable : Stable with module Type := T
   end

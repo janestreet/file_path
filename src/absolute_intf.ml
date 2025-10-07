@@ -7,7 +7,7 @@ open! Core
 
     Canonical absolute path strings must contain no consecutive slashes and must not end
     in a slash, except for root path [/]. *)
-module type S = sig
+module type S = sig @@ portable
   module Types : Types.S
   open Types
 
@@ -114,7 +114,7 @@ module type S = sig
   val number_of_parts : t -> int
 end
 
-module type Absolute = sig
+module type Absolute = sig @@ portable
   module type S = S
 
   include S with module Types := Types

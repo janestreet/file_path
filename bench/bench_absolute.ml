@@ -2,16 +2,21 @@
 
 open! Core
 
-type t = File_path.Absolute.t [@@deriving quickcheck, sexp, sexp_grammar]
+type t = File_path.Absolute.t
+[@@deriving compare ~localize, equal ~localize, quickcheck, sexp, sexp_grammar]
 
 let arg_type = File_path.Absolute.arg_type
 let root = File_path.Absolute.root
 
 include (
   File_path.Absolute :
-    Identifiable.S
-    with type t := t
-     and type comparator_witness = File_path.Absolute.comparator_witness)
+  sig
+  @@ portable
+    include
+      Identifiable.S
+      with type t := t
+       and type comparator_witness = File_path.Absolute.comparator_witness
+  end)
 
 let%bench_fun "equal =" =
   let x = Sys.opaque_identity (of_string "/foo/bar/baz") in

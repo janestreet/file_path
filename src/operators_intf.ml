@@ -17,7 +17,7 @@ open! Core
       slash
     - '.' means a path part with no slashes
     - '^' means concatenation with an ordinary string that does not represent a path *)
-module type S = sig
+module type S = sig @@ portable
   module Types : Types.S
   open Types
 
@@ -81,7 +81,7 @@ module type S = sig
   val ( /.^ ) : Part.t -> string -> Part.t
 end
 
-module type Operators = sig
+module type Operators = sig @@ portable
   module type S = S
 
   include S with module Types := Types

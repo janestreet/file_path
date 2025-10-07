@@ -9,7 +9,7 @@ module type Absolute = Absolute.S
 module type Path = Path.S
 module type Operators = Operators.S
 
-module type Stable = sig
+module type Stable = sig @@ portable
   module Types : Types
   module Part : Common.Stable with module Type := Types.Part
   module Relative : Common.Stable with module Type := Types.Relative
@@ -17,7 +17,7 @@ module type Stable = sig
   include Common.Stable with module Type := Types.Path
 end
 
-module type S = sig
+module type S = sig @@ portable
   (** Everything below uses the types and subtyping relationships of [Types]. *)
   module Types : Types
 
@@ -29,7 +29,7 @@ module type S = sig
   module Stable : Stable with module Types := Types
 end
 
-module type File_path = sig
+module type File_path = sig @@ portable
   module type Types = Types
   module type Part = Part
   module type Relative = Relative

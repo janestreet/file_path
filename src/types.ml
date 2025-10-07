@@ -2,12 +2,12 @@ open! Core
 include Types_intf
 
 module T = struct
-  type t = string [@@deriving equal, hash, sexp_of, sexp_grammar]
+  type t = string [@@deriving equal ~localize, hash, sexp_of, sexp_grammar]
 
   let to_string = Fn.id
-  let compare = Path_string.compare
+  let%template[@mode m = (global, local)] compare = (Path_string.compare [@mode m])
 
-  include (val Comparator.make ~compare ~sexp_of_t)
+  include (val (Comparator.make [@mode portable]) ~compare ~sexp_of_t)
 
   module Expert = struct
     let unchecked_of_canonical_string = Fn.id

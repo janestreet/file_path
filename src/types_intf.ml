@@ -1,10 +1,11 @@
 open! Core
 
-module type Type = sig
+module type Type = sig @@ portable
   (** Path types are represented as strings. *)
-  type t = private string [@@deriving equal, compare, hash, sexp_of, sexp_grammar]
+  type t = private string
+  [@@deriving equal ~localize, compare ~localize, hash, sexp_of, sexp_grammar]
 
-  include Comparator.S with type t := t
+  include Comparator.S [@mode portable] with type t := t
 
   (** Equivalent to [(t :> string)]. *)
   val to_string : t -> string
@@ -18,7 +19,7 @@ module type Type = sig
   end
 end
 
-module type S = sig
+module type S = sig @@ portable
   (** A path is a string. *)
   module Path : Type with type t = private string
 
@@ -32,7 +33,7 @@ module type S = sig
   module Part : Type with type t = private Relative.t
 end
 
-module type Types = sig
+module type Types = sig @@ portable
   module type Type = Type
   module type S = S
 

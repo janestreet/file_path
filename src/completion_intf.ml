@@ -1,6 +1,6 @@
 open! Core
 
-module type S = sig
+module type S = sig @@ portable
   (** Command-line completion for various path types in [bash]. *)
 
   val complete_path : string -> string list
@@ -9,7 +9,7 @@ module type S = sig
   val complete_part : string -> string list
 end
 
-module type Completion = sig
+module type Completion = sig @@ portable
   module type S = S
 
   include S

@@ -7,7 +7,7 @@ open! Core
 
     Canonical path strings must contain no consecutive slashes and must not end in a
     slash, except for the root path [/]. *)
-module type S = sig
+module type S = sig @@ portable
   module Types : Types.S
   open Types
 
@@ -211,7 +211,7 @@ module type S = sig
     type t =
       | Relative of Relative.t
       | Absolute of Absolute.t
-    [@@deriving compare, equal, quickcheck, sexp_of]
+    [@@deriving compare ~localize, equal ~localize, quickcheck, sexp_of]
 
     include Invariant.S with type t := t
   end
@@ -223,7 +223,7 @@ module type S = sig
   val of_variant : Variant.t -> t
 end
 
-module type Path = sig
+module type Path = sig @@ portable
   module type S = S
 
   include S with module Types := Types

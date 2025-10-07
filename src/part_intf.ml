@@ -5,7 +5,7 @@ open! Core
 
     Valid part strings must be non-empty, and must contain neither null characters nor
     slash characters. All valid part strings are canonical. *)
-module type S = sig
+module type S = sig @@ portable
   module Types : Types.S
 
   (** Parts are a subtype of [Relative.t], [Path.t], and [string]. *)
@@ -27,7 +27,7 @@ module type S = sig
   val append_to_basename_exn : t -> string -> t
 end
 
-module type Part = sig
+module type Part = sig @@ portable
   module type S = S
 
   include S with module Types := Types
