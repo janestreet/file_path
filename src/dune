@@ -1,6 +1,6 @@
 (library
  (name file_path)
  (public_name file_path)
- (libraries core core_kernel.nonempty_list ppx_stable_witness.stable_witness)
+ (libraries core ppx_stable_witness.stable_witness)
  (preprocess
   (pps ppx_jane)))
