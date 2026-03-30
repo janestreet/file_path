@@ -19,7 +19,7 @@
 open! Core
 
 type t = File_path.t
-[@@deriving compare ~localize, equal ~localize, quickcheck, sexp, sexp_grammar]
+[@@deriving compare ~localize, equal ~localize, quickcheck, sexp ~stackify, sexp_grammar]
 
 let arg_type = File_path.arg_type
 let root = File_path.root

@@ -3,7 +3,7 @@ open! Core
 module type Type = sig
   (** Path types are represented as strings. *)
   type t = private string
-  [@@deriving equal ~localize, compare ~localize, hash, sexp_of, sexp_grammar]
+  [@@deriving equal ~localize, compare ~localize, hash, sexp_of ~stackify, sexp_grammar]
 
   include Comparator.S [@mode portable] with type t := t
 

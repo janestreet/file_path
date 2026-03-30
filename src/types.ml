@@ -2,7 +2,7 @@ open! Core
 include Types_intf
 
 module T = struct
-  type t = string [@@deriving equal ~localize, hash, sexp_of, sexp_grammar]
+  type t = string [@@deriving equal ~localize, hash, sexp_of ~stackify, sexp_grammar]
 
   let to_string = Fn.id
   let%template[@mode m = (global, local)] compare = (Path_string.compare [@mode m])

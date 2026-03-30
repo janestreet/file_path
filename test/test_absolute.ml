@@ -4,7 +4,7 @@ open! Core
 open Expect_test_helpers_core
 
 type t = File_path.Absolute.t
-[@@deriving compare ~localize, equal ~localize, quickcheck, sexp, sexp_grammar]
+[@@deriving compare ~localize, equal ~localize, quickcheck, sexp ~stackify, sexp_grammar]
 
 let root = File_path.Absolute.root
 

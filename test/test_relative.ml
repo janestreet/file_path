@@ -4,7 +4,7 @@ open! Core
 open Expect_test_helpers_core
 
 type t = File_path.Relative.t
-[@@deriving compare ~localize, equal ~localize, quickcheck, sexp, sexp_grammar]
+[@@deriving compare ~localize, equal ~localize, quickcheck, sexp ~stackify, sexp_grammar]
 
 let dot = File_path.Relative.dot
 let dot_dot = File_path.Relative.dot_dot

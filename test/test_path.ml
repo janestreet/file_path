@@ -15,7 +15,7 @@ open! Core
 open Expect_test_helpers_core
 
 type t = File_path.t
-[@@deriving compare ~localize, equal ~localize, quickcheck, sexp, sexp_grammar]
+[@@deriving compare ~localize, equal ~localize, quickcheck, sexp ~stackify, sexp_grammar]
 
 let root = File_path.root
 let dot = File_path.dot
