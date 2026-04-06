@@ -6,6 +6,7 @@ bug-reports: "https://github.com/janestreet/file_path/issues"
 dev-repo: "git+https://github.com/janestreet/file_path.git"
 doc: "https://ocaml.janestreet.com/ocaml-core/latest/doc/file_path/index.html"
 license: "MIT"
+x-maintenance-intent: ["(latest)"]
 build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
@@ -13,7 +14,6 @@ depends: [
   "ocaml" {>= "5.1.0"}
   "async"
   "core"
-  "core_kernel"
   "core_unix"
   "expect_test_helpers_async"
   "expect_test_helpers_core"

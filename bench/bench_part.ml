@@ -3,7 +3,7 @@
 open! Core
 
 type t = File_path.Part.t
-[@@deriving compare ~localize, equal ~localize, quickcheck, sexp, sexp_grammar]
+[@@deriving compare ~localize, equal ~localize, quickcheck, sexp ~stackify, sexp_grammar]
 
 let arg_type = File_path.Part.arg_type
 let dot = File_path.Part.dot
