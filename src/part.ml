@@ -1,5 +1,5 @@
 open! Core
-include Part_intf
+include Part_intf.Definitions
 
 let char_is_valid = function
   | '/' | '\000' -> false
@@ -23,6 +23,8 @@ include
       let is_canonical (_ : string) = true
       let canonicalize = Fn.id
       let autocomplete = Completion.complete_part
+
+      module Quickcheckable_string = Path_string.Quickcheckable_part
     end)
 
 let dot = Expert.unchecked_of_canonical_string Path_string.dot
@@ -40,13 +42,3 @@ let append_to_basename_exn path suffix =
           "File_path.Part.append_to_basename_exn: suffix contains invalid characters"
           , { path : string; suffix : string }])
 ;;
-
-include
-  Quickcheckable.Of_quickcheckable [@mode portable]
-    (Path_string.Quickcheckable_part)
-    (struct
-      type nonrec t = t
-
-      let of_quickcheckable = Expert.unchecked_of_canonical_string
-      let to_quickcheckable = to_string
-    end)

@@ -1,5 +1,5 @@
 open! Core
-include Path_intf
+include Path_intf.Definitions
 
 include
   Common.Make
@@ -15,7 +15,23 @@ include
       let is_canonical = Path_string.is_canonical
       let canonicalize = Path_string.canonicalize
       let autocomplete = Completion.complete_path
+
+      module Quickcheckable_string = Path_string.Quickcheckable_path
     end)
+
+module Variant = struct
+  type t =
+    | Relative of Relative.t
+    | Absolute of Absolute.t
+  [@@deriving compare ~localize, equal ~localize, quickcheck ~portable, sexp_of]
+
+  let invariant t =
+    Invariant.invariant t sexp_of_t (fun () ->
+      match t with
+      | Relative relative -> Relative.invariant relative
+      | Absolute absolute -> Absolute.invariant absolute)
+  ;;
+end
 
 let is_absolute t = Path_string.is_absolute (to_string t)
 let is_relative t = Path_string.is_relative (to_string t)
@@ -359,20 +375,6 @@ let make_relative_if_possible t ~if_under =
       ~if_none:(fun string ~prefix:_ -> Expert.unchecked_of_canonical_string string)
 ;;
 
-module Variant = struct
-  type t =
-    | Relative of Relative.t
-    | Absolute of Absolute.t
-  [@@deriving compare ~localize, equal ~localize, quickcheck ~portable, sexp_of]
-
-  let invariant t =
-    Invariant.invariant t sexp_of_t (fun () ->
-      match t with
-      | Relative relative -> Relative.invariant relative
-      | Absolute absolute -> Absolute.invariant absolute)
-  ;;
-end
-
 let of_variant x =
   match (x : Variant.t) with
   | Relative relative -> of_relative relative
@@ -384,13 +386,3 @@ let to_variant t : Variant.t =
   then Absolute (unchecked_to_absolute t)
   else Relative (unchecked_to_relative t)
 ;;
-
-include
-  Quickcheckable.Of_quickcheckable [@mode portable]
-    (Path_string.Quickcheckable_path)
-    (struct
-      type nonrec t = t
-
-      let of_quickcheckable = Expert.unchecked_of_canonical_string
-      let to_quickcheckable = to_string
-    end)

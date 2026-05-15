@@ -1,5 +1,5 @@
 open! Core
-include Relative_intf
+include Relative_intf.Definitions
 
 include
   Common.Make
@@ -15,6 +15,8 @@ include
       let is_canonical = Path_string.is_canonical
       let canonicalize = Path_string.canonicalize
       let autocomplete = Completion.complete_relative
+
+      module Quickcheckable_string = Path_string.Quickcheckable_relative
     end)
 
 let of_part part = (part : Part.t :> t)
@@ -304,13 +306,3 @@ let of_parts_defaulting_to_dot parts =
 
 let of_parts_nonempty parts = of_parts_exn (Nonempty_list.to_list parts)
 let number_of_parts t = Path_string.number_of_parts (to_string t)
-
-include
-  Quickcheckable.Of_quickcheckable [@mode portable]
-    (Path_string.Quickcheckable_relative)
-    (struct
-      type nonrec t = t
-
-      let of_quickcheckable = Expert.unchecked_of_canonical_string
-      let to_quickcheckable = to_string
-    end)

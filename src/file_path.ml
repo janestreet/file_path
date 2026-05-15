@@ -13,4 +13,4 @@ module Stable = struct
   module Part = Part.Stable
 end
 
-include File_path_intf
+include File_path_intf.Definitions

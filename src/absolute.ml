@@ -1,5 +1,5 @@
 open! Core
-include Absolute_intf
+include Absolute_intf.Definitions
 
 include
   Common.Make
@@ -15,6 +15,8 @@ include
       let is_canonical = Path_string.is_canonical
       let canonicalize = Path_string.canonicalize
       let autocomplete = Completion.complete_absolute
+
+      module Quickcheckable_string = Path_string.Quickcheckable_absolute
     end)
 
 let root = Expert.unchecked_of_canonical_string Path_string.root
@@ -233,13 +235,3 @@ let of_parts parts =
 ;;
 
 let number_of_parts t = Path_string.number_of_parts (to_string t)
-
-include
-  Quickcheckable.Of_quickcheckable [@mode portable]
-    (Path_string.Quickcheckable_absolute)
-    (struct
-      type nonrec t = t
-
-      let of_quickcheckable = Expert.unchecked_of_canonical_string
-      let to_quickcheckable = to_string
-    end)
