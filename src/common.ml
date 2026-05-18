@@ -1,6 +1,6 @@
 open! Core
 open Stable_witness.Export
-include Common_intf
+include Common_intf.Definitions
 
 module Make (T : Types.Type) (Basis : Basis) = struct
   module Stable = struct
@@ -80,6 +80,16 @@ module Make (T : Types.Type) (Basis : Basis) = struct
   end
 
   include Stable.V1
+
+  include
+    Quickcheckable.Of_quickcheckable [@mode portable]
+      (Basis.Quickcheckable_string)
+      (struct
+        type nonrec t = t
+
+        let of_quickcheckable = Expert.unchecked_of_canonical_string
+        let to_quickcheckable = to_string
+      end)
 
   let arg_type =
     (Command.Arg_type.create [@mode portable])

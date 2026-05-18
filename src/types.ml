@@ -1,5 +1,5 @@
 open! Core
-include Types_intf
+include Types_intf.Definitions
 
 module T = struct
   type t = string [@@deriving equal ~localize, hash, sexp_of ~stackify, sexp_grammar]

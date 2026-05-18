@@ -12,16 +12,12 @@ build: [
 ]
 depends: [
   "ocaml" {>= "5.1.0"}
-  "async"
   "core"
-  "core_unix"
-  "expect_test_helpers_async"
-  "expect_test_helpers_core"
   "ppx_jane"
   "ppx_stable_witness"
-  "dune"                      {>= "3.17.0"}
+  "dune"               {>= "3.17.0"}
 ]
-available: arch != "arm32" & arch != "x86_32"
+available: arch != "x86_32"
 synopsis: "A library for typed manipulation of UNIX-style file paths"
 description: "
 A library for typed manipulation of UNIX-style file paths.

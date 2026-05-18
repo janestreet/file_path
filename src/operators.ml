@@ -1,5 +1,5 @@
 open! Core
-include Operators_intf
+include Operators_intf.Definitions
 
 (* The operators are synonyms for existing functions. No actual code should go in this
    file, all operators should also be exported by full names. *)

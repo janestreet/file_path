@@ -5,7 +5,7 @@
    since the cost of fork/exec and i/o likely dominates the cost of auto-completion. *)
 
 open! Core
-include Completion_intf
+include Completion_intf.Definitions
 
 module Sys = struct
   let getenv = Sys.getenv
