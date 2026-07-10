@@ -4,7 +4,7 @@ include Path
 module Absolute = Absolute
 module Relative = Relative
 module Part = Part
-module Operators = Operators
+module%template [@alloc a = (stack, heap)] Operators = Operators.O [@alloc a]
 
 module Stable = struct
   include Path.Stable

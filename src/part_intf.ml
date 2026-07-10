@@ -6,7 +6,7 @@ module Definitions = struct
 
       Valid part strings must be non-empty, and must contain neither null characters nor
       slash characters. All valid part strings are canonical. *)
-  module type S = sig
+  module type%template S = sig
     module Types : Types.S
 
     (** Parts are a subtype of [Relative.t], [Path.t], and [string]. *)
@@ -20,12 +20,16 @@ module Definitions = struct
     (** The parent directory, i.e. [..]. *)
     val dot_dot : t
 
+    [%%template:
+    [@@@alloc a @ l = (stack_local, heap_global)]
+
     (** Adds the given string as a suffix of the path part. Raises if the string contains
         characters that are illegal for a path part.
 
         We use "_to_basename_" in the name for consistency with similar operations on
         other path types. A path part is its own basename. *)
     val append_to_basename_exn : t -> string -> t
+    [@@alloc a]]
   end
 end
 

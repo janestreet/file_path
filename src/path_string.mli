@@ -22,32 +22,11 @@ val is_valid : string -> bool
     for the root path). *)
 val is_canonical : string -> bool
 
-(** Produces the canonical string for a path by eliminating redundant and trailing
-    slashes. *)
-val canonicalize : string -> string
-
-(** Compares two paths lexicographically as lists of parts. *)
-val%template compare : string -> string -> int
-[@@mode m = (global, local)]
-
 (** Reports if a path is absolute, i.e. starts with a slash. *)
 val is_absolute : string -> bool
 
 (** Reports if a path is relative, i.e. does not start with a slash. *)
 val is_relative : string -> bool
-
-(** Appends two paths, adding a slash between them (unless the first path is the root
-    path). Asserts that the second path is relative. *)
-val append : string -> string -> string
-
-(** Appends a string suffix to a path. *)
-val append_to_basename
-  :  string
-  -> suffix:string
-  -> if_valid:(string -> 'a)
-  -> if_invalid_path:(string -> suffix:string -> 'a)
-  -> if_invalid_suffix:(string -> suffix:string -> 'a)
-  -> 'a
 
 (** Reports if the parts of [prefix] are a non-strict prefix of the parts of the other
     argument, and the paths are both absolute or both relative. *)
@@ -57,24 +36,55 @@ val is_prefix : string -> prefix:string -> bool
     argument. Asserts that [suffix] is relative. *)
 val is_suffix : string -> suffix:string -> bool
 
+(** Equivalent to [List.length (to_parts string)], without allocating. *)
+val number_of_parts : string -> int
+
+[%%template:
+[@@@alloc a @ l = (stack_local, heap_global)]
+
+(** Produces the canonical string for a path by eliminating redundant and trailing
+    slashes. *)
+val canonicalize : string -> string
+[@@alloc a]
+
+(** Compares two paths lexicographically as lists of parts. *)
+val compare : string -> string -> int
+[@@mode l]
+
+(** Appends two paths, adding a slash between them (unless the first path is the root
+    path). Asserts that the second path is relative. *)
+val append : string -> string -> string
+[@@alloc a]
+
+(** Appends a string suffix to a path. *)
+val append_to_basename
+  :  string
+  -> suffix:string
+  -> if_valid:(string -> 'a)
+  -> if_invalid_path:(string -> suffix:string -> 'a)
+  -> if_invalid_suffix:(string -> suffix:string -> 'a)
+  -> 'a
+[@@alloc a]
+
 (** Produces the parts of the path. *)
 val to_parts : string -> part_of_string:(string -> 'part) -> 'part list
+[@@alloc a]
 
 (** Constructs an absolute path from the given parts. *)
 val of_parts_absolute : string list -> string
-
-(** Equivalent to [List.length (to_parts string)], without allocating. *)
-val number_of_parts : string -> int
+[@@alloc a]
 
 (** Removes [.] parts from the given path. Returns [.] if the given path is a relative
     path consisting only of one or more [.] parts. *)
 val simplify_dot : string -> string
+[@@alloc a]
 
 (** Removes [.] parts from the given path and cancels out [..] parts with preceding parts
     (that are neither [.] nor [..]). Does not check the file system; in the presence of
     symlinks, the resulting path may not be equivalent. Returns [.] if the given path is a
     relative path and all parts are canceled out. *)
 val simplify_dot_and_dot_dot_naively : string -> string
+[@@alloc a]
 
 (** The functions below all take callbacks so that success and failure can be
     distinguished without unnecessary allocation. In the success case, the given string
@@ -84,10 +94,12 @@ val simplify_dot_and_dot_dot_naively : string -> string
 (** Calls [if_some] with the final part of the given path, or [if_none] if given the root
     path. *)
 val basename : string -> if_some:(string -> 'a) -> if_none:(string -> 'a) -> 'a
+[@@alloc a]
 
 (** Calls [if_some] with all parts of the given path but the final one, or [if_none] if
     given the root path or a relative path of a single part. *)
 val dirname : string -> if_some:(string -> 'a) -> if_none:(string -> 'a) -> 'a
+[@@alloc a]
 
 (** Where [dirname] and [basename] would both call [if_some], calls [if_some] with both
     arguments. Otherwise calls [if_none]. *)
@@ -96,14 +108,17 @@ val dirname_and_basename
   -> if_some:(dirname:string -> basename:string -> 'a)
   -> if_none:(string -> 'a)
   -> 'a
+[@@alloc a]
 
 (** Calls [if_some] with the first part of a multiple-part relative path, or [if_none] if
     given a single-part path. Asserts that the path is relative. *)
 val top_dir : string -> if_some:(string -> 'a) -> if_none:(string -> 'a) -> 'a
+[@@alloc a]
 
 (** Calls [if_some] with all but the first part of a multiple-part relative path, or
     [if_none] if given a single-part path. Asserts that the path is relative. *)
 val all_but_top_dir : string -> if_some:(string -> 'a) -> if_none:(string -> 'a) -> 'a
+[@@alloc a]
 
 (** Where [top_dir] and [all_but_top_dir] would both call [if_some], calls [if_some] with
     both arguments. Otherwise calls [if_none]. *)
@@ -112,6 +127,7 @@ val top_dir_and_all_but_top_dir
   -> if_some:(top_dir:string -> all_but_top_dir:string -> 'a)
   -> if_none:(string -> 'a)
   -> 'a
+[@@alloc a]
 
 (** Calls [if_some] with all parts of the given path after [prefix], or [if_none] if
     [prefix] is not a prefix of the path's parts. Always calls [if_none] if the path and
@@ -123,6 +139,7 @@ val chop_prefix
   -> if_some:(string -> 'a)
   -> if_none:(string -> prefix:string -> 'a)
   -> 'a
+[@@alloc a]
 
 (** Calls [if_some] with all parts of the given path before [suffix], or [if_none] if
     [suffix] is not a suffix of the path's parts. Asserts that suffix is relative. If the
@@ -133,6 +150,7 @@ val chop_suffix
   -> if_some:(string -> 'a)
   -> if_none:(string -> suffix:string -> 'a)
   -> 'a
+[@@alloc a]
 
 (** Calls [if_some] with a relative path consisting of the given one or more parts, or
     [if_none] if the list of parts is empty. *)
@@ -141,6 +159,7 @@ val of_parts_relative
   -> if_some:(string -> 'a)
   -> if_none:(unit -> 'a)
   -> 'a
+[@@alloc a]]
 
 module Quickcheckable_part : Quickcheckable.S with type t = string
 module Quickcheckable_relative : Quickcheckable.S with type t = string

@@ -18,7 +18,7 @@ module Definitions = struct
         slash
       - '.' means a path part with no slashes
       - '^' means concatenation with an ordinary string that does not represent a path *)
-  module type S = sig
+  module type%template [@alloc a @ l = (stack_local, heap_global)] S = sig
     module Types : Types.S
     open Types
 
@@ -88,5 +88,5 @@ module type Operators = sig
     include Definitions
   end
 
-  include S with module Types := Types
+  module%template [@alloc a = (stack, heap)] O : S [@alloc a] with module Types := Types
 end
