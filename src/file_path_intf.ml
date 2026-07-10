@@ -10,7 +10,7 @@ module Definitions = struct
   module type Relative = Relative.S
   module type Absolute = Absolute.S
   module type Path = Path.S
-  module type Operators = Operators.S
+  module type%template Operators = Operators.S [@alloc a] [@@alloc a = (stack, heap)]
 
   module type Stable = sig @@ portable
     module Types : Types
@@ -28,7 +28,10 @@ module Definitions = struct
     module Relative : Relative with module Types := Types
     module Absolute : Absolute with module Types := Types
     include Path with module Types := Types
-    module Operators : Operators with module Types := Types
+
+    module%template [@alloc a = (stack, heap)] Operators :
+      Operators.S [@alloc a] with module Types := Types
+
     module Stable : Stable with module Types := Types
   end
 end

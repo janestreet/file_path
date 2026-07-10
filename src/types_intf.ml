@@ -4,19 +4,22 @@ module Definitions = struct
   module type Type = sig @@ portable
     (** Path types are represented as strings. *)
     type t = private string
-    [@@deriving equal ~localize, compare ~localize, hash, sexp_of ~stackify, sexp_grammar]
+    [@@deriving
+      equal ~localize, compare ~localize, globalize, hash, sexp_of ~stackify, sexp_grammar]
 
-    include Comparator.S [@mode portable] with type t := t
+    include%template Comparator.S [@mode portable] with type t := t
 
     (** Equivalent to [(t :> string)]. *)
-    val to_string : t -> string
+    val%template to_string : t @ m -> string @ m
+    [@@alloc __ @ m = (stack_local, heap_global)]
 
     module Expert : sig
       (** Used internally for performance purposes, this converts a valid string in
           canonical form for the given path type into a [t]. Calling this on invalid or
           non-canonical strings is safe (i.e. should not cause segfaults) but path
           accessors may return nonsense values. *)
-      val unchecked_of_canonical_string : string -> t
+      val%template unchecked_of_canonical_string : string @ m -> t @ m
+      [@@alloc __ @ m = (stack_local, heap_global)]
     end
   end
 

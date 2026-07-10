@@ -16,11 +16,14 @@ module Definitions = struct
 
         [to_string] is the identity function. [of_string] returns its input when the input
         is a valid string in canonical form. *)
-    include
+    include%template
       Identifiable.S
-      [@mode portable]
+      [@alloc stack] [@mode local portable]
       with type t := t
        and type comparator_witness := comparator_witness
+
+    val%template of_string : string @ l -> t @ l
+    [@@alloc __ @ l = (stack_local, heap_global)]
 
     include Invariant.S with type t := t
     include Quickcheckable.S with type t := t
@@ -50,9 +53,12 @@ module Definitions = struct
   module type Basis = sig @@ portable
     val module_name : string
     val caller_identity : Bin_prot.Shape.Uuid.t
-    val is_valid : string -> bool
-    val is_canonical : string -> bool
-    val canonicalize : string -> string
+    val is_valid : string @ local -> bool
+    val is_canonical : string @ local -> bool
+
+    val%template canonicalize : string @ l -> string @ l
+    [@@alloc __ @ l = (stack_local, heap_global)]
+
     val autocomplete : string -> string list
 
     module Quickcheckable_string : Quickcheckable.S with type t = string

@@ -20,99 +20,125 @@ module Definitions = struct
     (** The root directory, i.e. [/]. *)
     val root : t
 
+    (** Reports if the parts of [prefix] are a non-strict prefix of the parts of the other
+        argument. *)
+    val is_prefix : t @ local -> prefix:t @ local -> bool
+
+    (** Reports if the parts of [suffix] are a non-strict suffix of the parts of the other
+        argument. *)
+    val is_suffix : t @ local -> suffix:Relative.t @ local -> bool
+
+    (** Equivalent to [List.length (to_parts t)], without allocating. *)
+    val number_of_parts : t @ local -> int
+
+    [%%template:
+    [@@@alloc a @ l = (stack_local, heap_global)]
+
     (** Returns the final part of the given path, or [None] if given [root]. *)
-    val basename : t -> Part.t option
+    val basename : t @ l -> Part.t option @ l
+    [@@alloc a]
 
     (** Returns the final part of the given path, or raises if given [root]. *)
-    val basename_exn : t -> Part.t
+    val basename_exn : t @ l -> Part.t @ l
+    [@@alloc a]
 
     (** Returns the final part of the given path, or returns an error if given [root]. *)
-    val basename_or_error : t -> Part.t Or_error.t
+    val basename_or_error : t @ l -> Part.t Or_error.t @ l
+    [@@alloc a]
 
     (** Returns the final part of the given path, or [Part.dot] if given [root]. *)
-    val basename_defaulting_to_dot : t -> Part.t
+    val basename_defaulting_to_dot : t @ l -> Part.t @ l
+    [@@alloc a]
 
     (** Returns all parts of the given path but the final one, or [None] if given [root]. *)
-    val dirname : t -> t option
+    val dirname : t @ l -> t option @ l
+    [@@alloc a]
 
     (** Returns all parts of the given path but the final one, or raises if given [root]. *)
-    val dirname_exn : t -> t
+    val dirname_exn : t @ l -> t @ l
+    [@@alloc a]
 
     (** Returns all parts of the given path but the final one, or returns an error if
         given [root]. *)
-    val dirname_or_error : t -> t Or_error.t
+    val dirname_or_error : t @ l -> t Or_error.t @ l
+    [@@alloc a]
 
     (** Returns all parts of the given path but the final one, or [root] if given [root]. *)
-    val dirname_defaulting_to_root : t -> t
+    val dirname_defaulting_to_root : t @ l -> t @ l
+    [@@alloc a]
 
     (** Like [Option.both (dirname t) (basename t)]. Allocates [Some] at most once. *)
-    val dirname_and_basename : t -> (t * Part.t) option
+    val dirname_and_basename : t @ l -> (t * Part.t) option @ l
+    [@@alloc a]
 
     (** Adds the given string as a suffix of the path's basename. Raises if [t] is [root]
         and therefore has no basename, or if the string contains characters that are
         illegal for a path part. *)
-    val append_to_basename_exn : t -> string -> t
+    val append_to_basename_exn : t @ local -> string @ local -> t @ l
+    [@@alloc a]
 
     (** Adds a part to the end of the path. *)
-    val append_part : t -> Part.t -> t
+    val append_part : t @ local -> Part.t @ local -> t @ l
+    [@@alloc a]
 
     (** Appends the parts of a relative path to the end of the absolute path. *)
-    val append : t -> Relative.t -> t
-
-    (** Reports if the parts of [prefix] are a non-strict prefix of the parts of the other
-        argument. *)
-    val is_prefix : t -> prefix:t -> bool
-
-    (** Reports if the parts of [suffix] are a non-strict suffix of the parts of the other
-        argument. *)
-    val is_suffix : t -> suffix:Relative.t -> bool
+    val append : t @ local -> Relative.t @ local -> t @ l
+    [@@alloc a]
 
     (** Returns all parts of the given path after [prefix], or [None] if [prefix] is not a
         prefix of the path's parts. If the path equals [prefix], returns [Relative.dot]. *)
-    val chop_prefix : t -> prefix:t -> Relative.t option
+    val chop_prefix : t @ l -> prefix:t @ local -> Relative.t option @ l
+    [@@alloc a]
 
     (** Returns all parts of the given path after [prefix], or raises if [prefix] is not a
         prefix of the path's parts. If the path equals [prefix], returns [Relative.dot]. *)
-    val chop_prefix_exn : t -> prefix:t -> Relative.t
+    val chop_prefix_exn : t @ l -> prefix:t @ local -> Relative.t @ l
+    [@@alloc a]
 
     (** Returns all parts of the given path after [prefix], or returns an error if
         [prefix] is not a prefix of the path's parts. If the path equals [prefix], returns
         [Relative.dot]. *)
-    val chop_prefix_or_error : t -> prefix:t -> Relative.t Or_error.t
+    val chop_prefix_or_error : t @ l -> prefix:t @ local -> Relative.t Or_error.t @ l
+    [@@alloc a]
 
     (** Returns all parts of the given path before [suffix], or [None] if [suffix] is not
         a suffix of the path's parts. *)
-    val chop_suffix : t -> suffix:Relative.t -> t option
+    val chop_suffix : t @ l -> suffix:Relative.t @ local -> t option @ l
+    [@@alloc a]
 
     (** Returns all parts of the given path before [suffix], or raises if [suffix] is not
         a suffix of the path's parts. *)
-    val chop_suffix_exn : t -> suffix:Relative.t -> t
+    val chop_suffix_exn : t @ l -> suffix:Relative.t @ local -> t @ l
+    [@@alloc a]
 
     (** Returns all parts of the given path before [suffix], or returns an error if
         [suffix] is not a suffix of the path's parts. *)
-    val chop_suffix_or_error : t -> suffix:Relative.t -> t Or_error.t
+    val chop_suffix_or_error : t @ l -> suffix:Relative.t @ local -> t Or_error.t @ l
+    [@@alloc a]
 
     (** Returns all parts of the given path before [suffix], or returns the path unchanged
         if [suffix] is not a suffix of the path's parts. *)
-    val chop_suffix_if_exists : t -> suffix:Relative.t -> t
+    val chop_suffix_if_exists : t @ l -> suffix:Relative.t @ local -> t @ l
+    [@@alloc a]
 
     (** Removes [.] parts from the given path. *)
-    val simplify_dot : t -> t
+    val simplify_dot : t @ l -> t @ l
+    [@@alloc a]
 
     (** Removes [.] parts from the given path. Cancels out [..] parts with preceding parts
         (that are neither [.] nor [..]). Removes any [..] parts immediately following the
         leading [/]. Does not check the file system; in the presence of symlinks, the
         resulting path may not be equivalent. *)
-    val simplify_dot_and_dot_dot_naively : t -> t
+    val simplify_dot_and_dot_dot_naively : t @ l -> t @ l
+    [@@alloc a]
 
     (** Produces the parts of the path. *)
-    val to_parts : t -> Part.t list
+    val to_parts : t @ l -> Part.t list @ l
+    [@@alloc a]
 
     (** Constructs an absolute path from the given parts. *)
-    val of_parts : Part.t list -> t
-
-    (** Equivalent to [List.length (to_parts t)], without allocating. *)
-    val number_of_parts : t -> int
+    val of_parts : Part.t list @ local -> t @ l
+    [@@alloc a]]
   end
 end
 

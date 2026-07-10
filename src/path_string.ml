@@ -30,11 +30,11 @@ let null = '\000'
 let char_is_valid c = not (Char.equal c null)
 let char_is_slash c = Char.equal c slash_char
 let char_is_valid_for_part c = char_is_valid c && not (char_is_slash c)
-let is_root string = String.equal string root
+let%template is_root string = (String.equal [@mode local]) string root
 
 (* Compare paths lexicographically as lists of parts. Compares parts inline,
    character-by-character, to avoid allocating an actual [Part.t]. *)
-let%template[@mode local] compare =
+let compare_internal =
   let char_value char =
     (* Comparing slash as less than all other characters gives the same effect as
        comparing a list of parts separated by slash. *)
@@ -54,18 +54,17 @@ let%template[@mode local] compare =
       | 0 -> compare_from ~pos:(pos + 1) ~a ~b ~len_a ~len_b
       | c -> c)
   in
-  let[@mode local] compare a b =
+  let compare_internal a b =
     compare_from ~pos:0 ~a ~b ~len_a:(String.length a) ~len_b:(String.length b)
   in
-  compare [@mode local]
+  compare_internal
 ;;
-
-let%template compare = [%eta2 compare [@mode local]]
 
 (* Obviously, [is_valid] must be correct for even invalid strings. *)
 let is_valid =
-  let is_valid string =
-    (not (String.is_empty string)) && String.for_all string ~f:char_is_valid
+  let%template is_valid string =
+    (not (String.is_empty string))
+    && (String.for_all [@mode local]) string ~f:char_is_valid
   in
   is_valid
 ;;
@@ -90,41 +89,6 @@ let is_canonical =
 let is_absolute string = String.is_prefix string ~prefix:root
 let is_relative string = not (is_absolute string)
 
-let append_to_basename path ~suffix ~if_valid ~if_invalid_path ~if_invalid_suffix =
-  if is_root path
-  then if_invalid_path path ~suffix
-  else if String.for_all suffix ~f:char_is_valid_for_part
-  then if_valid (path ^ suffix)
-  else if_invalid_suffix path ~suffix
-;;
-
-let append prefix suffix =
-  (* Appending an absolute suffix makes no sense. *)
-  assert (is_relative suffix);
-  if is_root prefix
-  then root ^ suffix
-  else (
-    (* We implement three-way concatenation (i.e. prefix + slash + suffix) longhand to
-       avoid allocating intermediate results. *)
-    let prefix_len = String.length prefix in
-    let suffix_len = String.length suffix in
-    let bytes = Bytes.create (prefix_len + 1 + suffix_len) in
-    Bytes.From_string.unsafe_blit
-      ~dst:bytes
-      ~dst_pos:0
-      ~src:prefix
-      ~src_pos:0
-      ~len:prefix_len;
-    Bytes.unsafe_set bytes prefix_len slash_char;
-    Bytes.From_string.unsafe_blit
-      ~dst:bytes
-      ~dst_pos:(prefix_len + 1)
-      ~src:suffix
-      ~src_pos:0
-      ~len:suffix_len;
-    Bytes.unsafe_to_string ~no_mutation_while_string_reachable:bytes)
-;;
-
 (* A helper for finding first or last slash characters. Returns -1 on failure. *)
 let rec find_slash string ~pos ~stop_at ~increment =
   if pos = stop_at
@@ -140,84 +104,6 @@ let initial_slash_index string =
 
 let final_slash_index string =
   find_slash string ~pos:(String.length string - 1) ~stop_at:(-1) ~increment:(-1)
-;;
-
-let basename_at string ~non_negative_final_slash_index:index =
-  String.drop_prefix string (index + 1)
-;;
-
-let dirname_at string ~non_negative_final_slash_index:index =
-  if index = 0 then root else String.prefix string index
-;;
-
-let basename string ~if_some ~if_none =
-  if String.equal string root
-  then if_none string
-  else (
-    let index = final_slash_index string in
-    if index < 0
-    then if_some string
-    else if_some (basename_at string ~non_negative_final_slash_index:index))
-;;
-
-let dirname string ~if_some ~if_none =
-  if String.equal string root
-  then if_none string
-  else (
-    let index = final_slash_index string in
-    if index < 0
-    then if_none string
-    else if_some (dirname_at string ~non_negative_final_slash_index:index))
-;;
-
-let dirname_and_basename string ~if_some ~if_none =
-  if String.equal string root
-  then if_none string
-  else (
-    let index = final_slash_index string in
-    if index < 0
-    then if_none string
-    else
-      if_some
-        ~dirname:(dirname_at string ~non_negative_final_slash_index:index)
-        ~basename:(basename_at string ~non_negative_final_slash_index:index))
-;;
-
-let topdir_at string ~non_negative_final_slash_index:index = String.prefix string index
-
-let all_but_top_dir_at string ~non_negative_final_slash_index:index =
-  String.drop_prefix string (index + 1)
-;;
-
-let top_dir string ~if_some ~if_none =
-  (* The top directory of an absolute path is root, it is not worth an accessor. *)
-  assert (is_relative string);
-  let index = initial_slash_index string in
-  if index < 0
-  then if_none string
-  else if_some (topdir_at string ~non_negative_final_slash_index:index)
-;;
-
-let all_but_top_dir string ~if_some ~if_none =
-  (* All but the top directory of an absolute path is just a relative path with the
-     leading slash chopped off, it is not worth an accessor. *)
-  assert (is_relative string);
-  let index = initial_slash_index string in
-  if index < 0
-  then if_none string
-  else if_some (all_but_top_dir_at string ~non_negative_final_slash_index:index)
-;;
-
-let top_dir_and_all_but_top_dir string ~if_some ~if_none =
-  (* As [top_dir] and [all_but_top_dir_at], does not apply to absolute paths. *)
-  assert (is_relative string);
-  let index = initial_slash_index string in
-  if index < 0
-  then if_none string
-  else
-    if_some
-      ~top_dir:(topdir_at string ~non_negative_final_slash_index:index)
-      ~all_but_top_dir:(all_but_top_dir_at string ~non_negative_final_slash_index:index)
 ;;
 
 module Prefix_kind = struct
@@ -251,14 +137,6 @@ let is_prefix string ~prefix =
   match prefix_kind string ~prefix with
   | Equal | Strict_prefix | Root_prefix -> true
   | Not_a_prefix -> false
-;;
-
-let chop_prefix string ~prefix ~if_some ~if_none =
-  match prefix_kind string ~prefix with
-  | Equal -> if_some dot
-  | Root_prefix -> if_some (String.drop_prefix string (String.length prefix))
-  | Strict_prefix -> if_some (String.drop_prefix string (String.length prefix + 1))
-  | Not_a_prefix -> if_none string ~prefix
 ;;
 
 module Suffix_kind = struct
@@ -299,14 +177,6 @@ let is_suffix string ~suffix =
   | Not_a_suffix -> false
 ;;
 
-let chop_suffix string ~suffix ~if_some ~if_none =
-  match suffix_kind string ~suffix with
-  | Equal -> if_some dot
-  | Suffix_of_root -> if_some root
-  | Strict_suffix -> if_some (String.drop_suffix string (String.length suffix + 1))
-  | Not_a_suffix -> if_none string ~suffix
-;;
-
 (* [String.equal substring (String.sub string pos len)] without allocating *)
 let substring_equals string ~pos ~len ~substring =
   String.length substring = len && String.is_substring_at string ~pos ~substring
@@ -320,63 +190,313 @@ module Foldr_mode = struct
     | Simplify_dot_and_dot_dot_naively
 end
 
+[%%template
+[@@@alloc a @ l = (stack_local, heap_global)]
+
+let[@mode l] compare = [%eta2 compare_internal]
+
+let[@alloc a] append_to_basename
+  (path @ local)
+  ~(suffix @ local)
+  ~if_valid
+  ~if_invalid_path
+  ~if_invalid_suffix
+  =
+  (if is_root path
+   then if_invalid_path path ~suffix
+   else if (String.for_all [@mode local]) suffix ~f:char_is_valid_for_part
+   then if_valid ((String.append [@alloc a]) path suffix)
+   else if_invalid_suffix path ~suffix)
+  [@exclave_if_stack a]
+;;
+
+let[@alloc a] append (prefix @ local) (suffix @ local) @ l =
+  ((* Appending an absolute suffix makes no sense. *)
+   assert (is_relative suffix);
+   if is_root prefix
+   then (String.append [@alloc a]) root suffix
+   else (
+     (* We implement three-way concatenation (i.e. prefix + slash + suffix) longhand to
+        avoid allocating intermediate results. *)
+     let prefix_len = String.length prefix in
+     let suffix_len = String.length suffix in
+     let bytes = (Bytes.create [@alloc a]) (prefix_len + 1 + suffix_len) in
+     Bytes.From_string.unsafe_blit
+       ~dst:bytes
+       ~dst_pos:0
+       ~src:prefix
+       ~src_pos:0
+       ~len:prefix_len;
+     Bytes.unsafe_set bytes prefix_len slash_char;
+     Bytes.From_string.unsafe_blit
+       ~dst:bytes
+       ~dst_pos:(prefix_len + 1)
+       ~src:suffix
+       ~src_pos:0
+       ~len:suffix_len;
+     Bytes.unsafe_to_string ~no_mutation_while_string_reachable:bytes))
+  [@exclave_if_stack a]
+;;
+
+let[@alloc a] basename_at (string @ l) ~non_negative_final_slash_index:index =
+  (String.drop_prefix [@alloc a]) string (index + 1) [@exclave_if_stack a]
+;;
+
+let[@alloc a] dirname_at (string @ l) ~non_negative_final_slash_index:index =
+  if index = 0
+  then root
+  else (String.prefix [@alloc a]) string index [@exclave_if_stack a]
+;;
+
+let[@alloc a] basename string ~if_some ~if_none =
+  (if (String.equal [@mode l]) string root
+   then if_none string
+   else (
+     let index = final_slash_index string in
+     if index < 0
+     then if_some string
+     else if_some ((basename_at [@alloc a]) string ~non_negative_final_slash_index:index)))
+  [@exclave_if_stack a]
+;;
+
+let[@alloc a] dirname (string @ l) ~(if_some : _ @ l -> _ @ l) ~(if_none : _ @ l -> _ @ l)
+  =
+  (if (String.equal [@mode local]) string root
+   then if_none string
+   else (
+     let index = final_slash_index string in
+     if index < 0
+     then if_none string
+     else if_some ((dirname_at [@alloc a]) string ~non_negative_final_slash_index:index)))
+  [@exclave_if_stack a]
+;;
+
+let[@alloc a] dirname_and_basename string ~if_some ~if_none =
+  (if (String.equal [@mode l]) string root
+   then if_none string
+   else (
+     let index = final_slash_index string in
+     if index < 0
+     then if_none string
+     else
+       if_some
+         ~dirname:((dirname_at [@alloc a]) string ~non_negative_final_slash_index:index)
+         ~basename:((basename_at [@alloc a]) string ~non_negative_final_slash_index:index)))
+  [@exclave_if_stack a]
+;;
+
+let[@alloc a] topdir_at string ~non_negative_final_slash_index:index =
+  (String.prefix [@alloc a]) string index [@exclave_if_stack a]
+;;
+
+let[@alloc a] all_but_top_dir_at string ~non_negative_final_slash_index:index =
+  (String.drop_prefix [@alloc a]) string (index + 1) [@exclave_if_stack a]
+;;
+
+let[@alloc a] top_dir string ~if_some ~if_none =
+  ((* The top directory of an absolute path is root, it is not worth an accessor. *)
+   assert (is_relative string);
+   let index = initial_slash_index string in
+   if index < 0
+   then if_none string
+   else if_some ((topdir_at [@alloc a]) string ~non_negative_final_slash_index:index))
+  [@exclave_if_stack a]
+;;
+
+let[@alloc a] all_but_top_dir string ~if_some ~if_none =
+  ((* All but the top directory of an absolute path is just a relative path with the
+      leading slash chopped off, it is not worth an accessor. *)
+   assert (is_relative string);
+   let index = initial_slash_index string in
+   if index < 0
+   then if_none string
+   else
+     if_some
+       ((all_but_top_dir_at [@alloc a]) string ~non_negative_final_slash_index:index))
+  [@exclave_if_stack a]
+;;
+
+let[@alloc a] top_dir_and_all_but_top_dir string ~if_some ~if_none =
+  ((* As [top_dir] and [all_but_top_dir_at], does not apply to absolute paths. *)
+   assert (is_relative string);
+   let index = initial_slash_index string in
+   if index < 0
+   then if_none string
+   else
+     if_some
+       ~top_dir:((topdir_at [@alloc a]) string ~non_negative_final_slash_index:index)
+       ~all_but_top_dir:
+         ((all_but_top_dir_at [@alloc a]) string ~non_negative_final_slash_index:index))
+  [@exclave_if_stack a]
+;;
+
+let[@alloc a] chop_prefix string ~prefix ~if_some ~if_none =
+  match[@exclave_if_stack a] prefix_kind string ~prefix with
+  | Equal -> if_some dot
+  | Root_prefix -> if_some ((String.drop_prefix [@alloc a]) string (String.length prefix))
+  | Strict_prefix ->
+    if_some ((String.drop_prefix [@alloc a]) string (String.length prefix + 1))
+  | Not_a_prefix -> if_none string ~prefix
+;;
+
+let[@alloc a] chop_suffix string ~suffix ~if_some ~if_none =
+  match[@exclave_if_stack a] suffix_kind string ~suffix with
+  | Equal -> if_some dot
+  | Suffix_of_root -> if_some root
+  | Strict_suffix ->
+    if_some ((String.drop_suffix [@alloc a]) string (String.length suffix + 1))
+  | Not_a_suffix -> if_none string ~suffix
+;;
+
 (* Right-to-left fold over parts in a path. *)
-let foldr =
+let[@mode l] foldr =
   (* Loop from [start] (inclusive), where the current part ends at [until] (exclusive). *)
-  let rec foldr_up_to string ~foldr_mode ~start ~until ~depth ~state ~acc ~f =
+  let rec foldr_up_to
+    (string @ l)
+    ~foldr_mode
+    ~start
+    ~until
+    ~depth
+    ~(state @ l)
+    ~(acc @ l)
+    ~f @ l
+    =
     if start = -1 || char_is_slash (String.unsafe_get string start)
-    then foldr_up_to_part_end string ~foldr_mode ~start ~until ~depth ~state ~acc ~f
-    else foldr_up_to string ~foldr_mode ~start:(start - 1) ~until ~depth ~state ~acc ~f
+    then
+      foldr_up_to_part_end
+        string
+        ~foldr_mode
+        ~start
+        ~until
+        ~depth
+        ~state
+        ~acc
+        ~f [@exclave_if_local l]
+    else (
+      let start = start - 1 in
+      foldr_up_to
+        string
+        ~foldr_mode
+        ~start
+        ~until
+        ~depth
+        ~state
+        ~acc
+        ~f [@exclave_if_local l])
   (* Accumulates the part between [start] and [until] (both exclusive), if applicable. *)
-  and foldr_up_to_part_end string ~foldr_mode ~start ~until ~depth ~state ~acc ~f =
+  and foldr_up_to_part_end
+    (string @ l)
+    ~foldr_mode
+    ~start
+    ~until
+    ~depth
+    ~(state @ l)
+    ~(acc @ l)
+    ~(f : _ @ l -> pos:_ -> len:_ -> state:_ @ l -> acc:_ @ l -> _ @ l) @ l
+    =
     let pos = start + 1 in
     let len = until - pos in
     if len = 0
     then
       (* consecutive slashes or trailing slash, no part here *)
-      foldr_up_to_part_start string ~foldr_mode ~start ~depth ~state ~acc ~f
+      foldr_up_to_part_start
+        string
+        ~foldr_mode
+        ~start
+        ~depth
+        ~state
+        ~acc
+        ~f [@exclave_if_local l]
     else (
       match (foldr_mode : Foldr_mode.t) with
       | (Simplify_dot | Simplify_dot_and_dot_dot_naively)
         when substring_equals string ~pos ~len ~substring:dot ->
         (* discard [.] *)
-        foldr_up_to_part_start string ~foldr_mode ~start ~depth ~state ~acc ~f
+        foldr_up_to_part_start
+          string
+          ~foldr_mode
+          ~start
+          ~depth
+          ~state
+          ~acc
+          ~f [@exclave_if_local l]
       | Simplify_dot_and_dot_dot_naively
         when substring_equals string ~pos ~len ~substring:dot_dot ->
         (* record a [..] to be canceled *)
         let depth = depth + 1 in
-        foldr_up_to_part_start string ~foldr_mode ~start ~depth ~state ~acc ~f
+        foldr_up_to_part_start
+          string
+          ~foldr_mode
+          ~start
+          ~depth
+          ~state
+          ~acc
+          ~f [@exclave_if_local l]
       | Simplify_dot_and_dot_dot_naively when depth > 0 ->
         (* cancel a [..] *)
         let depth = depth - 1 in
-        foldr_up_to_part_start string ~foldr_mode ~start ~depth ~state ~acc ~f
+        foldr_up_to_part_start
+          string
+          ~foldr_mode
+          ~start
+          ~depth
+          ~state
+          ~acc
+          ~f [@exclave_if_local l]
       | All_parts | Simplify_dot | Simplify_dot_and_dot_dot_naively ->
         (* accumulate a part normally *)
-        let acc = f string ~pos ~len ~state ~acc in
-        foldr_up_to_part_start string ~foldr_mode ~start ~depth ~state ~acc ~f)
+        (let acc = f string ~pos ~len ~state ~acc in
+         foldr_up_to_part_start string ~foldr_mode ~start ~depth ~state ~acc ~f)
+        [@exclave_if_local l ~reasons:[ May_return_local ]])
   (* Resumes processing after (possibly) accumulating a part. *)
-  and foldr_up_to_part_start string ~foldr_mode ~start ~depth ~state ~acc ~f =
+  and foldr_up_to_part_start
+    (string @ l)
+    ~foldr_mode
+    ~start
+    ~depth
+    ~(state @ l)
+    ~(acc @ l)
+    ~f @ l
+    =
     if start = -1
     then
       if is_absolute string
-      then (* [/..] = [/] *) acc
-      else foldr_dot_dots ~depth ~state ~acc ~f
+      then (* [/..] = [/] *) acc [@exclave_if_local l]
+      else foldr_dot_dots ~depth ~state ~acc ~f [@exclave_if_local l]
     else (
       let start = start - 1
       and until = start in
-      foldr_up_to string ~foldr_mode ~start ~until ~depth ~state ~acc ~f)
+      foldr_up_to
+        string
+        ~foldr_mode
+        ~start
+        ~until
+        ~depth
+        ~state
+        ~acc
+        ~f [@exclave_if_local l])
   (* Accumulates uncanceled [..]s. *)
-  and foldr_dot_dots ~depth ~state ~acc ~f =
+  and foldr_dot_dots ~depth ~(state @ l) ~(acc @ l) ~f @ l =
     if depth = 0
     then acc
     else (
-      let depth = depth - 1 in
-      let acc = f dot_dot ~pos:0 ~len:dot_dot_length ~state ~acc in
-      foldr_dot_dots ~depth ~state ~acc ~f)
+      (let depth = depth - 1 in
+       let acc = f dot_dot ~pos:0 ~len:dot_dot_length ~state ~acc in
+       foldr_dot_dots ~depth ~state ~acc ~f)
+      [@exclave_if_local l ~reasons:[ May_return_local ]])
   in
-  let foldr string ~foldr_mode ~state ~acc ~f =
+  let foldr (string @ l) ~foldr_mode ~(state @ l) ~(acc @ l) ~f @ l =
     let len = String.length string in
-    foldr_up_to string ~foldr_mode ~start:(len - 1) ~until:len ~depth:0 ~state ~acc ~f
+    let start = len - 1 in
+    foldr_up_to
+      string
+      ~foldr_mode
+      ~start
+      ~until:len
+      ~depth:0
+      ~state
+      ~acc
+      ~f [@exclave_if_local l]
   in
   foldr
 ;;
@@ -385,7 +505,7 @@ let foldr =
    [root] or [dot] if there are no parts, depending on whether the path is absolute or
    relative. Assumes the [Foldr.t] accumulates a subset of the input's parts, and returns
    the original string if the result has the same length as the input. *)
-let rewrite =
+let[@alloc a] rewrite =
   (* Counts the characters in a part plus its preceding slash. *)
   let count_slash_part _ ~pos:_ ~len ~state:() ~acc = 1 + len + acc in
   (* Writes a part into a [Bytes.t], with a preceding slash if it fits. *)
@@ -399,96 +519,113 @@ let rewrite =
       Bytes.unsafe_set dst dst_pos slash_char;
       dst_pos)
   in
-  let rewrite foldr_mode string =
-    (* For relative strings, we decrement the length to effectively remove the leading
-       slash of the first part. *)
-    let len_with_leading_slash =
-      foldr string ~foldr_mode ~state:() ~acc:0 ~f:count_slash_part
-    in
-    if len_with_leading_slash = 0
-    then if is_absolute string then root else dot
-    else (
-      let len =
-        if is_absolute string then len_with_leading_slash else len_with_leading_slash - 1
-      in
-      if len = String.length string
-      then (* If the path is unchanged, do not allocate a copy. *)
-        string
-      else (
-        let bytes = Bytes.create len in
-        let pos = foldr string ~foldr_mode ~state:bytes ~acc:len ~f:write_slash_part in
-        (* Make sure the two character counts line up. *)
-        assert (pos = 0);
-        Bytes.unsafe_to_string ~no_mutation_while_string_reachable:bytes))
+  let rewrite foldr_mode (string @ l) =
+    ((* For relative strings, we decrement the length to effectively remove the leading
+        slash of the first part. *)
+     let len_with_leading_slash =
+       (foldr [@mode l]) string ~foldr_mode ~state:() ~acc:0 ~f:count_slash_part
+     in
+     if len_with_leading_slash = 0
+     then if is_absolute string then root else dot
+     else (
+       let len =
+         if is_absolute string then len_with_leading_slash else len_with_leading_slash - 1
+       in
+       if len = String.length string
+       then (* If the path is unchanged, do not allocate a copy. *)
+         string
+       else (
+         let bytes = (Bytes.create [@alloc a]) len in
+         let pos =
+           (foldr [@mode l]) string ~foldr_mode ~state:bytes ~acc:len ~f:write_slash_part
+         in
+         (* Make sure the two character counts line up. *)
+         assert (pos = 0);
+         Bytes.unsafe_to_string ~no_mutation_while_string_reachable:bytes)))
+    [@exclave_if_stack a]
   in
   rewrite
 ;;
 
-let canonicalize = rewrite All_parts
-let simplify_dot = rewrite Simplify_dot
-let simplify_dot_and_dot_dot_naively = rewrite Simplify_dot_and_dot_dot_naively
+let[@alloc a] canonicalize = (rewrite [@alloc a]) All_parts
+let[@alloc a] simplify_dot = (rewrite [@alloc a]) Simplify_dot
 
-let to_parts =
-  let add_part string ~pos ~len ~state:part_of_string ~acc =
-    let part_string = String.sub string ~pos ~len in
-    part_of_string part_string :: acc
+let[@alloc a] simplify_dot_and_dot_dot_naively =
+  (rewrite [@alloc a]) Simplify_dot_and_dot_dot_naively
+;;
+
+let[@alloc a] to_parts =
+  let add_part (string @ l) ~pos ~len ~state:(part_of_string : _ @ l -> _ @ l) ~(acc @ l)
+    @ l
+    =
+    (let part_string = (String.sub [@alloc a]) string ~pos ~len in
+     part_of_string part_string :: acc)
+    [@exclave_if_stack a]
   in
-  let to_parts string ~part_of_string =
-    foldr string ~foldr_mode:All_parts ~state:part_of_string ~acc:[] ~f:add_part
+  let to_parts (string @ l) ~(part_of_string : _ @ l -> _ @ l) =
+    (foldr [@mode l])
+      string
+      ~foldr_mode:All_parts
+      ~state:part_of_string
+      ~acc:[]
+      ~f:add_part [@exclave_if_stack a]
   in
   to_parts
 ;;
 
-let of_parts_relative parts ~if_some ~if_none =
-  if List.is_empty parts
-  then if_none ()
-  else if_some (String.concat ~sep:slash_string parts)
+let[@alloc a] of_parts_relative parts ~if_some ~if_none =
+  match[@exclave_if_stack a] parts with
+  | [] -> if_none ()
+  | [ part ] -> if_some part
+  | _ :: _ :: _ as parts -> if_some ((String.concat [@alloc a]) ~sep:slash_string parts)
 ;;
 
-let of_parts_absolute parts =
-  if List.is_empty parts
-  then root
-  else
-    (* Adding an empty string to the parts is a bit of a hack to force a leading slash,
-       and is also a small amount of intermediate allocation. This is still cleaner and
-       simpler than reimplementing all of [String.concat] just to improve this. *)
-    String.concat ~sep:slash_string ("" :: parts)
-;;
+let[@alloc a] of_parts_absolute (parts @ local) =
+  (if List.is_empty parts
+   then root
+   else
+     (* Adding an empty string to the parts is a bit of a hack to force a leading slash,
+        and is also a small amount of intermediate allocation. This is still cleaner and
+        simpler than reimplementing all of [String.concat] just to improve this. *)
+     (String.concat [@alloc a]) ~sep:slash_string ("" :: parts) [@nontail])
+  [@exclave_if_stack a]
+;;]
 
-let number_of_parts =
+let%template number_of_parts =
   let count_part _ ~pos:_ ~len:_ ~state:() ~acc = acc + 1 in
   let number_of_parts string =
-    foldr string ~foldr_mode:All_parts ~state:() ~acc:0 ~f:count_part
+    (foldr [@mode local]) string ~foldr_mode:All_parts ~state:() ~acc:0 ~f:count_part
+    |> [%globalize: int]
   in
   number_of_parts
 ;;
 
-module Quickcheckable_part = struct
+module%template Quickcheckable_part = struct
+  open Base_quickcheck
+
   type t = string
 
   let char_generator =
-    (Base_quickcheck.Generator.filter [@mode portable])
-      Base_quickcheck.Generator.char
-      ~f:(function
+    (Generator.filter [@mode portable]) Generator.char ~f:(function
       | '/' | '\000' -> false
       | _ -> true)
   ;;
 
   let quickcheck_generator =
-    (Base_quickcheck.Generator.union [@mode portable])
-      [ (Base_quickcheck.Generator.string_non_empty_of [@mode portable]) char_generator
-      ; (Base_quickcheck.Generator.of_list [@mode portable]) [ dot; dot_dot ]
+    (Generator.union [@mode portable])
+      [ (Generator.string_non_empty_of [@mode portable]) char_generator
+      ; (Generator.of_list [@mode portable]) [ dot; dot_dot ]
       ]
   ;;
 
-  let quickcheck_observer = Base_quickcheck.Observer.string
-  let quickcheck_shrinker = Base_quickcheck.Shrinker.atomic
+  let quickcheck_observer = Observer.string
+  let quickcheck_shrinker = Shrinker.atomic
 end
 
 module Quickcheckable_relative = struct
   type t = string
 
-  include
+  include%template
     Quickcheckable.Of_quickcheckable_filtered [@mode portable]
       (struct
         type t = Quickcheckable_part.t list [@@deriving quickcheck ~portable]
@@ -510,7 +647,7 @@ end
 module Quickcheckable_absolute = struct
   type t = string
 
-  include
+  include%template
     Quickcheckable.Of_quickcheckable [@mode portable]
       (struct
         type t = Quickcheckable_part.t list [@@deriving quickcheck ~portable]
@@ -526,7 +663,7 @@ end
 module Quickcheckable_path = struct
   type t = string
 
-  include
+  include%template
     Quickcheckable.Of_quickcheckable [@mode portable]
       (struct
         type t = (Quickcheckable_relative.t, Quickcheckable_absolute.t) Either.t

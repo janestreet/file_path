@@ -15,7 +15,7 @@ module Make (T : Types.Type) (Basis : Basis) = struct
         raise_s
           [%sexp
             (Printf.sprintf "%s.%s: invalid string" Basis.module_name name : string)
-            , (string : string)]
+            , (globalize_string string : string)]
       ;;
 
       let[@cold] raise_non_canonical ~name string =
@@ -23,15 +23,18 @@ module Make (T : Types.Type) (Basis : Basis) = struct
           [%sexp
             (Printf.sprintf "%s.%s: non-canonical representation" Basis.module_name name
              : string)
-            , (string : string)]
+            , (globalize_string string : string)]
       ;;
 
-      let of_string string =
-        if not (Basis.is_valid string)
-        then raise_invalid ~name:"of_string" string
-        else if not (Basis.is_canonical string)
-        then Expert.unchecked_of_canonical_string (Basis.canonicalize string)
-        else Expert.unchecked_of_canonical_string string
+      let%template[@alloc a @ l = (stack_local, heap_global)] of_string string =
+        (if not (Basis.is_valid string)
+         then raise_invalid ~name:"of_string" string
+         else if not (Basis.is_canonical string)
+         then
+           (Expert.unchecked_of_canonical_string [@alloc a])
+             ((Basis.canonicalize [@alloc a]) string)
+         else (Expert.unchecked_of_canonical_string [@alloc a]) string)
+        [@exclave_if_stack a]
       ;;
 
       let invariant t =
@@ -42,15 +45,23 @@ module Make (T : Types.Type) (Basis : Basis) = struct
         then raise_non_canonical ~name:"invariant" string
       ;;
 
-      include Binable.Of_stringable_with_uuid [@mode portable] (struct
-          type nonrec t = t
+      include%template
+        Binable.Of_binable_with_uuid [@mode local portable]
+          (String.Stable.V1)
+          (struct
+            type nonrec t = t
 
-          let of_string = of_string
-          let to_string = to_string
-          let caller_identity = Basis.caller_identity
-        end)
+            let of_binable = of_string
 
-      include Sexpable.Of_stringable [@mode portable] (struct
+            [%%template
+            [@@@alloc a @ l = (stack_local, heap_global)]
+
+            let[@mode l] to_binable = (to_string [@alloc a])]
+
+            let caller_identity = Basis.caller_identity
+          end)
+
+      include%template Sexpable.Of_stringable [@mode portable] (struct
           type nonrec t = t
 
           let of_string = of_string
@@ -63,12 +74,13 @@ module Make (T : Types.Type) (Basis : Basis) = struct
         Stable_witness.of_serializable [%stable_witness: string] of_string to_string
       ;;
 
-      include Identifiable.Make_using_comparator [@mode portable] (struct
-          type nonrec t = t [@@deriving bin_io, compare ~localize, hash, sexp]
+      include%template
+        Identifiable.Make_using_comparator [@alloc stack] [@mode local portable] (struct
+          type nonrec t = t [@@deriving bin_io ~localize, compare ~localize, hash, sexp]
           type nonrec comparator_witness = comparator_witness
 
           let of_string = of_string
-          let to_string = to_string
+          let%template[@alloc a = (stack, heap)] to_string = (to_string [@alloc a])
           let comparator = comparator
           let module_name = Basis.module_name
         end)
@@ -81,7 +93,7 @@ module Make (T : Types.Type) (Basis : Basis) = struct
 
   include Stable.V1
 
-  include
+  include%template
     Quickcheckable.Of_quickcheckable [@mode portable]
       (Basis.Quickcheckable_string)
       (struct
@@ -91,7 +103,7 @@ module Make (T : Types.Type) (Basis : Basis) = struct
         let to_quickcheckable = to_string
       end)
 
-  let arg_type =
+  let%template arg_type =
     (Command.Arg_type.create [@mode portable])
       of_string
       ~complete:(fun (_ : Univ_map.t) ~part ->
